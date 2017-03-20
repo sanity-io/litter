@@ -8,7 +8,7 @@ replace additional references to the same object with aliases. Like this:
 
 ```go
 type Circular struct {
-  Self: *Circuler
+  Self: *Circular
 }
 
 selfref := Circular{}

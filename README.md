@@ -3,7 +3,28 @@
 Go-squirt implements a deep pretty printer for Go data structures to aid in debugging. It is a limited
 replacement for `go-spew` with focus on terseness in output to make life simpler when debugging complex
 data structures. Its main reason for being is that it will detect circular references or aliasing and
-replace additional references to the same object with aliases.
+replace additional references to the same object with aliases. Like this:
+
+
+```go
+type Circular struct {
+  Self: *Circuler
+}
+
+selfref := Circular{}
+selfred.Self = &selfref
+
+squirt.Dump(selfref)
+```
+
+will output:
+
+```
+Circular { // p0
+  Self: p0,
+}
+```
+
 
 ## Installation
 

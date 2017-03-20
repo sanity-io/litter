@@ -5,6 +5,27 @@ replacement for `go-spew` with focus on terseness in output to make life simpler
 data structures. Its main reason for being is that it will detect circular references or aliasing and
 replace additional references to the same object with aliases.
 
+## Installation
+
+```bash
+$ go get -u github.com/sanity-io/go-squirt/squirt
+```
+
+## Quick Start
+
+Add this import line to the file you're working in:
+
+```go
+import "github.com/sanity-io/go-squirt/squirt"
+```
+
+To dump a variable with full newlines, indentation, type, and aliasing
+information use Dump or Sdump:
+
+```go
+squirt.Dump(myVar1)
+str := squirt.Sdump(myVar1)
+```
 ## `squirt.Dump(value)`
 Dumps the data structure to STDOUT.
 

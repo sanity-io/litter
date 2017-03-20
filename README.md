@@ -12,19 +12,19 @@ type Circular struct {
 }
 
 selfref := Circular{}
-selfred.Self = &selfref
+selfref.Self = &selfref
 
 squirt.Dump(selfref)
 ```
 
 will output:
 
-```
+```go
 Circular { // p0
   Self: p0,
 }
 ```
-
+(a small bonus: the output is valid Go fwiw)
 
 ## Installation
 

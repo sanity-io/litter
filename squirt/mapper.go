@@ -19,13 +19,13 @@ func MapReusedPointers(v reflect.Value) []uintptr {
 }
 
 // Recursively consider v and each of its children, updating the map according to the
-// semantics of mapReusedPointers
+// semantics of MapReusedPointers
 func (pm *pointerMap) consider(v reflect.Value) {
 	if v.Kind() == reflect.Invalid {
 		return
 	}
 	// fmt.Printf("Considering [%s] %#v\n\r", v.Type().String(), v.Interface())
-	if isPointerValue(v) {
+	if isPointerValue(v) && v.Pointer() != 0 { // pointer is 0 for unexported fields
 		// fmt.Printf("Ptr is %d\n\r", v.Pointer())
 		reused := pm.addPointerReturnTrueIfWasReused(v.Pointer())
 		if reused {

@@ -1,14 +1,36 @@
 package squirt_test
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/sanity-io/go-squirt/squirt"
+	"github.com/stretchr/testify/assert"
 )
 
 type BananStruct struct {
 	Alacazam int
 	Foosh    []string
+}
+
+func performDumpTests(t *testing.T, suiteName string, cases interface{}) {
+	referenceFileName := "testdata/" + suiteName + ".dump"
+	dump := squirt.Sdump(cases)
+	reference, err := ioutil.ReadFile(referenceFileName)
+	if os.IsNotExist(err) || true {
+		ioutil.WriteFile(referenceFileName, []byte(dump), 0644)
+		return
+	}
+	assert.Equal(t, string(reference), dump)
+}
+
+func TestDump_primitives(t *testing.T) {
+	performDumpTests(t, "primitives", []interface{}{
+		false, true, 7, uint8(130), float32(12.3), float64(12.3),
+		complex64(12 + 10.5i), complex128(-1.2 - 0.1i),
+		nil, interface{}(nil),
+	})
 }
 
 func TestSquirt_dumpBasicTypes(t *testing.T) {

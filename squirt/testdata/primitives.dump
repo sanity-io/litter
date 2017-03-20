@@ -1,0 +1,12 @@
+[]interface {}{
+  false,
+  true,
+  7,
+  130,
+  12.3,
+  12.3,
+  complex64(12+10.5i),
+  complex128(-1.2-0.1i),
+  nil,
+  nil,
+}

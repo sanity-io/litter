@@ -113,7 +113,21 @@ func TestDump_config(t *testing.T) {
 	performDumpTestsWithCfg(t, "config_HomePackage", &squirt.Options{
 		HomePackage: "squirt_test",
 	}, data)
+}
 
+func TestDump_maps(t *testing.T) {
+	performDumpTests(t, "maps", []interface{}{
+		map[string]string{
+			"hello": "there",
+		},
+		map[int]string{
+			1: "one",
+			2: "two",
+		},
+		map[int]*BlankStruct{
+			2: &BlankStruct{},
+		},
+	})
 }
 
 func DiffStrings(t *testing.T, expected, actual string) (*string, bool) {

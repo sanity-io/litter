@@ -15,14 +15,14 @@ var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\
 // Options represents configuration options for squirt
 type Options struct {
 	StripPackageNames  bool
-	HidePrivateMembers bool
+	HidePrivateFields bool
 	HomePackage        string
 }
 
 // Config is the default config used when calling Dump
 var Config = Options{
 	StripPackageNames:  false,
-	HidePrivateMembers: true,
+	HidePrivateFields: true,
 }
 
 type dumpState struct {
@@ -92,7 +92,7 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 	numFields := v.NumField()
 	for i := 0; i < numFields; i++ {
 		vtf := vt.Field(i)
-		if s.config.HidePrivateMembers && vtf.PkgPath != "" {
+		if s.config.HidePrivateFields && vtf.PkgPath != "" {
 			continue
 		}
 		if !preambleDumped {

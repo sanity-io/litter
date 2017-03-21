@@ -104,8 +104,8 @@ func TestDump_config(t *testing.T) {
 		squirt.Config,
 		&BasicStruct{1, 2},
 	}
-	performDumpTestsWithCfg(t, "config_HidePrivateMembers", &squirt.Options{
-		HidePrivateMembers: true,
+	performDumpTestsWithCfg(t, "config_HidePrivateFields", &squirt.Options{
+		HidePrivateFields: true,
 	}, data)
 	performDumpTestsWithCfg(t, "config_StripPackageNames", &squirt.Options{
 		StripPackageNames: true,

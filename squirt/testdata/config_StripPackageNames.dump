@@ -1,7 +1,7 @@
 []interface {}{
   Options{
     StripPackageNames: false,
-    HidePrivateMembers: true,
+    HidePrivateFields: true,
     HomePackage: "",
   },
   BasicStruct{

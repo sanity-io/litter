@@ -14,14 +14,14 @@ var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\
 
 // Options represents configuration options for squirt
 type Options struct {
-	StripPackageNames  bool
+	StripPackageNames bool
 	HidePrivateFields bool
-	HomePackage        string
+	HomePackage       string
 }
 
 // Config is the default config used when calling Dump
 var Config = Options{
-	StripPackageNames:  false,
+	StripPackageNames: false,
 	HidePrivateFields: true,
 }
 
@@ -293,23 +293,18 @@ func Sdump(value interface{}) string {
 	return (&Config).Sdump(value)
 }
 
-// New creates a new squirt context with the specified options
-func New(opts Options) *Options {
-	return &opts
-}
-
 // Dump a value to stdout according to the options
-func (o *Options) Dump(value interface{}) {
-	state := newDumpState(value, o)
+func (o Options) Dump(value interface{}) {
+	state := newDumpState(value, &o)
 	state.w = os.Stdout
 	state.dump(value)
 	state.w.Write([]byte("\n"))
 }
 
 // Sdump dumps a value to a string according to the options
-func (o *Options) Sdump(value interface{}) string {
+func (o Options) Sdump(value interface{}) string {
 	buf := new(bytes.Buffer)
-	state := newDumpState(value, o)
+	state := newDumpState(value, &o)
 	state.w = buf
 	state.dump(value)
 	return buf.String()

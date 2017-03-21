@@ -58,7 +58,7 @@ You can configure squirt globally by modifying the default `squirt.Config`
 
 ```go
 squirt.Config.StripPackageNames = true // strip all package names from types
-squirt.Config.HidePrivateMembers = true // hide private members from dumped structs
+squirt.Config.HidePrivateFields = true // hide private struct fields from dumped structs
 squirt.Config.HomePackage = "mypackage" // sets a "home" pacage. The package name will be stripped from all its types
 ```
 ## `squirt.New(opts)`
@@ -66,8 +66,8 @@ Allows you to configure a local version of squirt to allow for proper compartmen
 expense of some comfort:
 
 ``` go
-  sq := squirt.New(squirt.Options {
-    HidePrivateMembers: true,
+  sq := &squirt.Options {
+    HidePrivateFields: true,
     HomePackage: "thispack",
   })
 

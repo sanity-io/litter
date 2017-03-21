@@ -62,8 +62,7 @@ squirt.Config.HidePrivateFields = true // hide private struct fields from dumped
 squirt.Config.HomePackage = "mypackage" // sets a "home" pacage. The package name will be stripped from all its types
 ```
 ## `squirt.Options`
-Allows you to configure a local version of squirt to allow for proper compartmentalization of state at the
-expense of some comfort:
+Allows you to configure a local configuration of squirt to allow for proper compartmentalization of state at the expense of some comfort:
 
 ``` go
   sq := squirt.Options {

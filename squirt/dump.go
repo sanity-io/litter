@@ -159,12 +159,18 @@ func (s *dumpState) handlePointerAliasingAndCheckIfShouldDescend(value reflect.V
 }
 
 func (s *dumpState) dumpVal(value reflect.Value) {
+	if value.Kind() == reflect.Ptr && value.IsNil() {
+		s.w.Write([]byte("nil"))
+		return
+	}
+
 	v := deInterface(value)
 	kind := v.Kind()
 	switch kind {
 	case reflect.Invalid:
 		// Do nothing.  We should never get here since invalid has already
 		// been handled above.
+		s.w.Write([]byte("<invalid>"))
 
 	case reflect.Bool:
 		printBool(s.w, v.Bool())

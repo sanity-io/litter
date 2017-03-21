@@ -1,0 +1,10 @@
+[]interface {}{
+  squirt.Options{
+    StripPackageNames: false,
+    HidePrivateMembers: true,
+    HomePackage: "",
+  },
+  squirt_test.BasicStruct{
+    Public: 1,
+  },
+}

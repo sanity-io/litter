@@ -29,7 +29,7 @@ Circular { // p0
 ## Installation
 
 ```bash
-$ go get -u github.com/sanity-io/go-litter/litter
+$ go get -u github.com/sanity-io/litter
 ```
 
 ## Quick Start
@@ -37,7 +37,8 @@ $ go get -u github.com/sanity-io/go-litter/litter
 Add this import line to the file you're working in:
 
 ```go
-import "github.com/sanity-io/go-litter/litter"
+import "github.com/sanity-io/
+litter/litter"
 ```
 
 To dump a variable with full newlines, indentation, type, and aliasing

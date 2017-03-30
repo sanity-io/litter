@@ -37,8 +37,7 @@ $ go get -u github.com/sanity-io/litter
 Add this import line to the file you're working in:
 
 ```go
-import "github.com/sanity-io/
-litter/litter"
+import "github.com/sanity-io/litter"
 ```
 
 To dump a variable with full newlines, indentation, type, and aliasing

@@ -1,5 +1,5 @@
 []interface {}{
-  squirt.Options{
+  litter.Options{
     StripPackageNames: false,
     HidePrivateFields: true,
     HomePackage: "",

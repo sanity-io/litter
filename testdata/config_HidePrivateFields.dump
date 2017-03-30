@@ -1,10 +1,10 @@
 []interface {}{
-  squirt.Options{
+  litter.Options{
     StripPackageNames: false,
     HidePrivateFields: true,
     HomePackage: "",
   },
-  squirt_test.BasicStruct{
+  litter_test.BasicStruct{
     Public: 1,
   },
 }

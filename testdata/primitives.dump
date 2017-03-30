@@ -22,9 +22,9 @@
     3,
   },
   "hello from interface",
-  squirt_test.BlankStruct{},
-  squirt_test.BlankStruct{},
-  squirt_test.BasicStruct{
+  litter_test.BlankStruct{},
+  litter_test.BlankStruct{},
+  litter_test.BasicStruct{
     Public: 1,
     private: 2,
   },

@@ -6,7 +6,7 @@
     1: "one",
     2: "two",
   },
-  map[int]*squirt_test.BlankStruct{
-    2: squirt_test.BlankStruct{},
+  map[int]*litter_test.BlankStruct{
+    2: litter_test.BlankStruct{},
   },
 }

@@ -1,4 +1,4 @@
-package squirt_test
+package litter_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/sanity-io/go-squirt/squirt"
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,9 +27,9 @@ type RecursiveStruct struct {
 	Ptr *RecursiveStruct
 }
 
-var standardCfg = squirt.Options{}
+var standardCfg = litter.Options{}
 
-func performDumpTestsWithCfg(t *testing.T, suiteName string, cfg *squirt.Options, cases interface{}) {
+func performDumpTestsWithCfg(t *testing.T, suiteName string, cfg *litter.Options, cases interface{}) {
 	referenceFileName := "testdata/" + suiteName + ".dump"
 	dump := cfg.Sdump(cases)
 	reference, err := ioutil.ReadFile(referenceFileName)
@@ -101,17 +101,17 @@ func TestDump_nilIntefacesInStructs(t *testing.T) {
 
 func TestDump_config(t *testing.T) {
 	data := []interface{}{
-		squirt.Config,
+		litter.Config,
 		&BasicStruct{1, 2},
 	}
-	performDumpTestsWithCfg(t, "config_HidePrivateFields", &squirt.Options{
+	performDumpTestsWithCfg(t, "config_HidePrivateFields", &litter.Options{
 		HidePrivateFields: true,
 	}, data)
-	performDumpTestsWithCfg(t, "config_StripPackageNames", &squirt.Options{
+	performDumpTestsWithCfg(t, "config_StripPackageNames", &litter.Options{
 		StripPackageNames: true,
 	}, data)
-	performDumpTestsWithCfg(t, "config_HomePackage", &squirt.Options{
-		HomePackage: "squirt_test",
+	performDumpTestsWithCfg(t, "config_HomePackage", &litter.Options{
+		HomePackage: "litter_test",
 	}, data)
 }
 

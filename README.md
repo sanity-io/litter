@@ -1,6 +1,6 @@
-# go-squirt
+# go-litter
 
-Go-squirt implements a deep pretty printer for Go data structures to aid in debugging. It is a limited
+Go-litter implements a deep pretty printer for Go data structures to aid in debugging. It is a limited
 replacement for `go-spew` with focus on terseness in output to make life simpler when debugging complex
 data structures. Its main reason for being is that it will detect circular references or aliasing and
 replace additional references to the same object with aliases. Like this:
@@ -14,7 +14,7 @@ type Circular struct {
 selfref := Circular{}
 selfref.Self = &selfref
 
-squirt.Dump(selfref)
+litter.Dump(selfref)
 ```
 
 will output:
@@ -29,7 +29,7 @@ Circular { // p0
 ## Installation
 
 ```bash
-$ go get -u github.com/sanity-io/go-squirt/squirt
+$ go get -u github.com/sanity-io/go-litter/litter
 ```
 
 ## Quick Start
@@ -37,35 +37,35 @@ $ go get -u github.com/sanity-io/go-squirt/squirt
 Add this import line to the file you're working in:
 
 ```go
-import "github.com/sanity-io/go-squirt/squirt"
+import "github.com/sanity-io/go-litter/litter"
 ```
 
 To dump a variable with full newlines, indentation, type, and aliasing
 information use Dump or Sdump:
 
 ```go
-squirt.Dump(myVar1)
-str := squirt.Sdump(myVar1)
+litter.Dump(myVar1)
+str := litter.Sdump(myVar1)
 ```
-## `squirt.Dump(value)`
+## `litter.Dump(value)`
 Dumps the data structure to STDOUT.
 
-## `squirt.Sdump(value)`
+## `litter.Sdump(value)`
 Returns the dump as a string
 
 ## Configuration
-You can configure squirt globally by modifying the default `squirt.Config`
+You can configure litter globally by modifying the default `litter.Config`
 
 ```go
-squirt.Config.StripPackageNames = true // strip all package names from types
-squirt.Config.HidePrivateFields = true // hide private struct fields from dumped structs
-squirt.Config.HomePackage = "mypackage" // sets a "home" pacage. The package name will be stripped from all its types
+litter.Config.StripPackageNames = true // strip all package names from types
+litter.Config.HidePrivateFields = true // hide private struct fields from dumped structs
+litter.Config.HomePackage = "mypackage" // sets a "home" pacage. The package name will be stripped from all its types
 ```
-## `squirt.Options`
-Allows you to configure a local configuration of squirt to allow for proper compartmentalization of state at the expense of some comfort:
+## `litter.Options`
+Allows you to configure a local configuration of litter to allow for proper compartmentalization of state at the expense of some comfort:
 
 ``` go
-  sq := squirt.Options {
+  sq := litter.Options {
     HidePrivateFields: true,
     HomePackage: "thispack",
   })

@@ -1,4 +1,4 @@
-package squirt
+package litter
 
 import (
 	"io"

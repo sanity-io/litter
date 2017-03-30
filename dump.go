@@ -1,4 +1,4 @@
-package squirt
+package litter
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 
 var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\.")
 
-// Options represents configuration options for squirt
+// Options represents configuration options for litter
 type Options struct {
 	StripPackageNames bool
 	HidePrivateFields bool

@@ -4,7 +4,7 @@
     HidePrivateFields: true,
     HomePackage: "",
   },
-  BasicStruct{
+  &BasicStruct{
     Public: 1,
     private: 2,
   },

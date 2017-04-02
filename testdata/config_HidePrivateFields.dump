@@ -4,7 +4,7 @@
     HidePrivateFields: true,
     HomePackage: "",
   },
-  litter_test.BasicStruct{
+  &litter_test.BasicStruct{
     Public: 1,
   },
 }

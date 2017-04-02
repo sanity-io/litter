@@ -7,6 +7,6 @@
     2: "two",
   },
   map[int]*litter_test.BlankStruct{
-    2: litter_test.BlankStruct{},
+    2: &litter_test.BlankStruct{},
   },
 }

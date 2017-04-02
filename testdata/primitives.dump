@@ -23,7 +23,7 @@
   },
   "hello from interface",
   litter_test.BlankStruct{},
-  litter_test.BlankStruct{},
+  &litter_test.BlankStruct{},
   litter_test.BasicStruct{
     Public: 1,
     private: 2,

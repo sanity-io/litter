@@ -1,8 +1,8 @@
 []*litter_test.InterfaceStruct{
-  litter_test.InterfaceStruct{ // p0
+  &litter_test.InterfaceStruct{ // p0
     Ifc: nil,
   },
-  litter_test.InterfaceStruct{
+  &litter_test.InterfaceStruct{
     Ifc: p0,
   },
   p0,

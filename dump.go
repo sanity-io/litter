@@ -216,8 +216,8 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 		}
 
 	case reflect.Ptr:
-		// s.w.Write([]byte("&"))
 		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
+			s.w.Write([]byte("&"))
 			s.dumpVal(v.Elem())
 		}
 

@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 )
 
@@ -123,6 +124,7 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 	s.newlineWithPointerNameComment()
 	s.depth++
 	keys := v.MapKeys()
+	sort.Sort(mapKeySorter{keys})
 	for _, key := range keys {
 		s.indent()
 		s.dumpVal(key)
@@ -308,4 +310,20 @@ func (o Options) Sdump(value interface{}) string {
 	state.w = buf
 	state.dump(value)
 	return buf.String()
+}
+
+type mapKeySorter struct {
+	keys []reflect.Value
+}
+
+func (s mapKeySorter) Len() int {
+	return len(s.keys)
+}
+
+func (s mapKeySorter) Swap(i, j int) {
+	s.keys[i], s.keys[j] = s.keys[j], s.keys[i]
+}
+
+func (s mapKeySorter) Less(i, j int) bool {
+	return fmt.Sprintf("%s", s.keys[i].Interface()) < fmt.Sprintf("%s", s.keys[j].Interface())
 }

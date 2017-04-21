@@ -118,9 +118,12 @@ func TestDump_config(t *testing.T) {
 func TestDump_maps(t *testing.T) {
 	performDumpTests(t, "maps", []interface{}{
 		map[string]string{
-			"hello": "there",
+			"hello":          "there",
+			"something":      "something something",
+			"another string": "indeed",
 		},
 		map[int]string{
+			3: "three",
 			1: "one",
 			2: "two",
 		},

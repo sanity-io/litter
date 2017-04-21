@@ -50,8 +50,7 @@ func (pm *pointerMap) consider(v reflect.Value) {
 		pm.consider(v.Elem())
 
 	case reflect.Map:
-		keys := v.MapKeys()
-		for _, key := range keys {
+		for _, key := range v.MapKeys() {
 			pm.consider(v.MapIndex(key))
 		}
 

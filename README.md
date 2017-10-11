@@ -68,7 +68,7 @@ The first run will use Litter to write the data to `testdata.txt`. On subsequent
 
 ### Circular references
 
-Litter detects circular references or aliasing, and will additional references to the same object with aliases. For example:
+Litter detects circular references or aliasing, and will replace additional references to the same object with aliases. For example:
 
 ```go
 type Circular struct {

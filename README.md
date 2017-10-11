@@ -110,11 +110,11 @@ litter.Dump(myVar1)
 str := litter.Sdump(myVar1)
 ```
 
-### `litter.Dump(value)`
+### `litter.Dump(value, ...)`
 
 Dumps the data structure to STDOUT.
 
-### `litter.Sdump(value)`
+### `litter.Sdump(value, ...)`
 
 Returns the dump as a string
 
@@ -131,6 +131,9 @@ litter.Config.HidePrivateFields = true
 
 // Sets a "home" pacage. The package name will be stripped from all its types
 litter.Config.HomePackage = "mypackage"
+
+// Sets separator used when multiple arguments are passed to Dump() or Sdump().
+litter.Config.Separator = "\n"
 ```
 
 ### `litter.Options`
@@ -141,8 +144,9 @@ Allows you to configure a local configuration of litter to allow for proper comp
   sq := litter.Options {
     HidePrivateFields: true,
     HomePackage: "thispack",
+    Separator: " ",
   }
 
-  sq.Dump([]string("dumped", "with", "local", "settings"))
+  sq.Dump("dumped", "with", "local", "settings")
 ```
 

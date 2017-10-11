@@ -3,6 +3,7 @@
     StripPackageNames: false,
     HidePrivateFields: true,
     HomePackage: "",
+    Separator: " ",
   },
   &BasicStruct{
     Public: 1,

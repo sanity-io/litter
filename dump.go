@@ -18,12 +18,14 @@ type Options struct {
 	StripPackageNames bool
 	HidePrivateFields bool
 	HomePackage       string
+	Separator         string
 }
 
 // Config is the default config used when calling Dump
 var Config = Options{
 	StripPackageNames: false,
 	HidePrivateFields: true,
+	Separator:         " ",
 }
 
 type dumpState struct {
@@ -296,19 +298,28 @@ func Sdump(value interface{}) string {
 }
 
 // Dump a value to stdout according to the options
-func (o Options) Dump(value interface{}) {
-	state := newDumpState(value, &o)
-	state.w = os.Stdout
-	state.dump(value)
-	state.w.Write([]byte("\n"))
+func (o Options) Dump(values ...interface{}) {
+	for i, value := range values {
+		if i > 0 {
+			os.Stdout.Write([]byte(o.Separator))
+		}
+		state := newDumpState(value, &o)
+		state.w = os.Stdout
+		state.dump(value)
+	}
 }
 
 // Sdump dumps a value to a string according to the options
-func (o Options) Sdump(value interface{}) string {
+func (o Options) Sdump(values ...interface{}) string {
 	buf := new(bytes.Buffer)
-	state := newDumpState(value, &o)
-	state.w = buf
-	state.dump(value)
+	for i, value := range values {
+		if i > 0 {
+			buf.Write([]byte(o.Separator))
+		}
+		state := newDumpState(value, &o)
+		state.w = buf
+		state.dump(value)
+	}
 	return buf.String()
 }
 

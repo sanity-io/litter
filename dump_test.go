@@ -27,8 +27,8 @@ type RecursiveStruct struct {
 	Ptr *RecursiveStruct
 }
 
-func TestDump_primitives(t *testing.T) {
-	performDumpTests(t, "primitives", []interface{}{
+func TestSdump_primitives(t *testing.T) {
+	runTests(t, "primitives", []interface{}{
 		false,
 		true,
 		7,
@@ -56,13 +56,13 @@ func TestDump_primitives(t *testing.T) {
 	})
 }
 
-func TestDump_pointerAliasing(t *testing.T) {
+func TestSdump_pointerAliasing(t *testing.T) {
 	p0 := &RecursiveStruct{Ptr: nil}
 	p1 := &RecursiveStruct{Ptr: p0}
 	p2 := &RecursiveStruct{}
 	p2.Ptr = p2
 
-	performDumpTests(t, "pointerAliasing", []*RecursiveStruct{
+	runTests(t, "pointerAliasing", []*RecursiveStruct{
 		p0,
 		p0,
 		p1,
@@ -70,11 +70,11 @@ func TestDump_pointerAliasing(t *testing.T) {
 	})
 }
 
-func TestDump_nilIntefacesInStructs(t *testing.T) {
+func TestSdump_nilIntefacesInStructs(t *testing.T) {
 	p0 := &InterfaceStruct{nil}
 	p1 := &InterfaceStruct{p0}
 
-	performDumpTests(t, "nilIntefacesInStructs", []*InterfaceStruct{
+	runTests(t, "nilIntefacesInStructs", []*InterfaceStruct{
 		p0,
 		p1,
 		p0,
@@ -82,24 +82,33 @@ func TestDump_nilIntefacesInStructs(t *testing.T) {
 	})
 }
 
-func TestDump_config(t *testing.T) {
+func TestSdump_config(t *testing.T) {
 	data := []interface{}{
 		litter.Config,
 		&BasicStruct{1, 2},
 	}
-	performDumpTestsWithCfg(t, "config_HidePrivateFields", &litter.Options{
+	runTestWithCfg(t, "config_HidePrivateFields", &litter.Options{
 		HidePrivateFields: true,
 	}, data)
-	performDumpTestsWithCfg(t, "config_StripPackageNames", &litter.Options{
+	runTestWithCfg(t, "config_StripPackageNames", &litter.Options{
 		StripPackageNames: true,
 	}, data)
-	performDumpTestsWithCfg(t, "config_HomePackage", &litter.Options{
+	runTestWithCfg(t, "config_HomePackage", &litter.Options{
 		HomePackage: "litter_test",
 	}, data)
 }
 
-func TestDump_maps(t *testing.T) {
-	performDumpTests(t, "maps", []interface{}{
+func TestSdump_multipleArgs(t *testing.T) {
+	value1 := []string{"x", "y"}
+	value2 := int32(42)
+
+	runTestWithCfg(t, "multipleArgs_noSeparator", &litter.Options{}, value1, value2)
+	runTestWithCfg(t, "multipleArgs_lineBreak", &litter.Options{Separator: "\n"}, value1, value2)
+	runTestWithCfg(t, "multipleArgs_separator", &litter.Options{Separator: "***"}, value1, value2)
+}
+
+func TestSdump_maps(t *testing.T) {
+	runTests(t, "maps", []interface{}{
 		map[string]string{
 			"hello":          "there",
 			"something":      "something something",
@@ -118,19 +127,22 @@ func TestDump_maps(t *testing.T) {
 
 var standardCfg = litter.Options{}
 
-func performDumpTestsWithCfg(t *testing.T, suiteName string, cfg *litter.Options, cases interface{}) {
-	referenceFileName := "testdata/" + suiteName + ".dump"
-	dump := cfg.Sdump(cases)
-	reference, err := ioutil.ReadFile(referenceFileName)
-	if os.IsNotExist(err) {
-		ioutil.WriteFile(referenceFileName, []byte(dump), 0644)
-		return
-	}
-	assertEqualStringsWithDiff(t, string(reference), dump)
+func runTestWithCfg(t *testing.T, name string, cfg *litter.Options, cases ...interface{}) {
+	t.Run(name, func(t *testing.T) {
+		fileName := fmt.Sprintf("testdata/%s.dump", name)
+		dump := cfg.Sdump(cases...)
+		reference, err := ioutil.ReadFile(fileName)
+		if os.IsNotExist(err) {
+			t.Logf("Note: Test data file %s does not exist, writing it; verify contents!", fileName)
+			ioutil.WriteFile(fileName, []byte(dump), 0644)
+			return
+		}
+		assertEqualStringsWithDiff(t, string(reference), dump)
+	})
 }
 
-func performDumpTests(t *testing.T, suiteName string, cases interface{}) {
-	performDumpTestsWithCfg(t, suiteName, &standardCfg, cases)
+func runTests(t *testing.T, name string, cases ...interface{}) {
+	runTestWithCfg(t, name, &standardCfg, cases...)
 }
 
 func diffStrings(t *testing.T, expected, actual string) (*string, bool) {

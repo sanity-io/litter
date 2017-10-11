@@ -27,23 +27,6 @@ type RecursiveStruct struct {
 	Ptr *RecursiveStruct
 }
 
-var standardCfg = litter.Options{}
-
-func performDumpTestsWithCfg(t *testing.T, suiteName string, cfg *litter.Options, cases interface{}) {
-	referenceFileName := "testdata/" + suiteName + ".dump"
-	dump := cfg.Sdump(cases)
-	reference, err := ioutil.ReadFile(referenceFileName)
-	if os.IsNotExist(err) {
-		ioutil.WriteFile(referenceFileName, []byte(dump), 0644)
-		return
-	}
-	AssertEqualStringsWithDiff(t, string(reference), dump)
-}
-
-func performDumpTests(t *testing.T, suiteName string, cases interface{}) {
-	performDumpTestsWithCfg(t, suiteName, &standardCfg, cases)
-}
-
 func TestDump_primitives(t *testing.T) {
 	performDumpTests(t, "primitives", []interface{}{
 		false,
@@ -133,7 +116,24 @@ func TestDump_maps(t *testing.T) {
 	})
 }
 
-func DiffStrings(t *testing.T, expected, actual string) (*string, bool) {
+var standardCfg = litter.Options{}
+
+func performDumpTestsWithCfg(t *testing.T, suiteName string, cfg *litter.Options, cases interface{}) {
+	referenceFileName := "testdata/" + suiteName + ".dump"
+	dump := cfg.Sdump(cases)
+	reference, err := ioutil.ReadFile(referenceFileName)
+	if os.IsNotExist(err) {
+		ioutil.WriteFile(referenceFileName, []byte(dump), 0644)
+		return
+	}
+	assertEqualStringsWithDiff(t, string(reference), dump)
+}
+
+func performDumpTests(t *testing.T, suiteName string, cases interface{}) {
+	performDumpTestsWithCfg(t, suiteName, &standardCfg, cases)
+}
+
+func diffStrings(t *testing.T, expected, actual string) (*string, bool) {
 	if actual == expected {
 		return nil, true
 	}
@@ -156,9 +156,9 @@ func DiffStrings(t *testing.T, expected, actual string) (*string, bool) {
 	return &diff, false
 }
 
-func AssertEqualStringsWithDiff(t *testing.T, expected, actual string,
+func assertEqualStringsWithDiff(t *testing.T, expected, actual string,
 	msgAndArgs ...interface{}) bool {
-	diff, ok := DiffStrings(t, expected, actual)
+	diff, ok := diffStrings(t, expected, actual)
 	if ok {
 		return true
 	}

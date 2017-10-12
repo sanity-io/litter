@@ -129,7 +129,7 @@ litter.Config.StripPackageNames = true
 // Hide private struct fields from dumped structs
 litter.Config.HidePrivateFields = true
 
-// Sets a "home" pacage. The package name will be stripped from all its types
+// Sets a "home" package. The package name will be stripped from all its types
 litter.Config.HomePackage = "mypackage"
 
 // Sets separator used when multiple arguments are passed to Dump() or Sdump().

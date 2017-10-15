@@ -29,7 +29,7 @@ litter.Dump(Person{
 
 will output:
 
-```go
+```
 Person{
   Name: "Bob",
   Age: 20,
@@ -83,7 +83,7 @@ litter.Dump(selfref)
 
 will output:
 
-```go
+```
 Circular { // p0
   Self: p0,
 }

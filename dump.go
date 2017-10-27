@@ -300,13 +300,14 @@ func Sdump(value interface{}) string {
 // Dump a value to stdout according to the options
 func (o Options) Dump(values ...interface{}) {
 	for i, value := range values {
-		if i > 0 {
-			os.Stdout.Write([]byte(o.Separator))
-		}
 		state := newDumpState(value, &o)
 		state.w = os.Stdout
+		if i > 0 {
+			state.w.Write([]byte(o.Separator))
+		}
 		state.dump(value)
 	}
+	os.Stdout.Write([]byte("\n"))
 }
 
 // Sdump dumps a value to a string according to the options

@@ -150,3 +150,32 @@ Allows you to configure a local configuration of litter to allow for proper comp
   sq.Dump("dumped", "with", "local", "settings")
 ```
 
+## Custom dumpers
+
+Implement the interface Dumper on your types to take control of how your type is dumped.
+
+``` go
+type Dumper interface {
+  Dump(w io.Writer)
+}
+```
+
+Just write your custom dump to the provided stream, using multiple lines divided by `"\n"` if you need. Litter
+might indent your output according to context, and optionally decorate your first line with a pointer comment
+where appropriate.
+
+A couple of examples from the test suite:
+
+``` go
+type CustomMultiLineDumper struct {}
+
+func (cmld *CustomMultiLineDumper) Dump(w io.Writer) {
+  w.Write([]byte("{\n  multi\n  line\n}"))
+}
+
+type CustomSingleLineDumper int
+
+func (csld CustomSingleLineDumper) Dump(w io.Writer) {
+  w.Write([]byte("<custom>"))
+}
+````

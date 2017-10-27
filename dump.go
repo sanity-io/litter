@@ -9,9 +9,15 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\.")
+
+// Dumper is the interface for implementing custom dumper for your types.
+type Dumper interface {
+	Dump(w io.Writer)
+}
 
 // Options represents configuration options for litter
 type Options struct {
@@ -140,6 +146,42 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 	s.w.Write([]byte("}"))
 }
 
+func (s *dumpState) dumpCustom(v reflect.Value) {
+	// Run the custom dumper buffering the output
+	buf := new(bytes.Buffer)
+	dumpFunc := v.MethodByName("Dump")
+	dumpFunc.Call([]reflect.Value{reflect.ValueOf(buf)})
+
+	// Dump the type
+	s.dumpType(v)
+
+	// Now output the dump taking care to apply the current indentation-level
+	// and pointer name comments.
+	var err error
+	firstLine := true
+	for err == nil {
+		lineBytes, err := buf.ReadBytes('\n')
+		line := strings.TrimRight(string(lineBytes), " \n")
+
+		if err != nil && err != io.EOF {
+			break
+		}
+		// Do not indent first line
+		if firstLine {
+			firstLine = false
+		} else {
+			s.indent()
+		}
+		s.w.Write([]byte(line))
+		// At EOF we're done
+		if err == io.EOF {
+			return
+		}
+		s.newlineWithPointerNameComment()
+	}
+	panic(err)
+}
+
 func (s *dumpState) dump(value interface{}) {
 	if value == nil {
 		printNil(s.w)
@@ -170,6 +212,16 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	v := deInterface(value)
 	kind := v.Kind()
+
+	// Handle custom dumpers
+	dumperType := reflect.TypeOf((*Dumper)(nil)).Elem()
+	if v.Type().Implements(dumperType) {
+		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
+			s.dumpCustom(v)
+		}
+		return
+	}
+
 	switch kind {
 	case reflect.Invalid:
 		// Do nothing.  We should never get here since invalid has already

@@ -2,6 +2,7 @@ package litter_test
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -25,6 +26,20 @@ type InterfaceStruct struct {
 
 type RecursiveStruct struct {
 	Ptr *RecursiveStruct
+}
+
+type CustomMultiLineDumper struct {
+	Dummy int
+}
+
+func (cmld *CustomMultiLineDumper) Dump(w io.Writer) {
+	w.Write([]byte("{\n  multi\n  line\n}"))
+}
+
+type CustomSingleLineDumper int
+
+func (csld CustomSingleLineDumper) Dump(w io.Writer) {
+	w.Write([]byte("<custom>"))
 }
 
 func TestSdump_primitives(t *testing.T) {
@@ -53,6 +68,22 @@ func TestSdump_primitives(t *testing.T) {
 		BasicStruct{1, 2},
 		nil,
 		interface{}(nil),
+	})
+}
+
+func TestSdump_customDumper(t *testing.T) {
+	cmld := CustomMultiLineDumper{Dummy: 1}
+	cmld2 := CustomMultiLineDumper{Dummy: 2}
+	csld := CustomSingleLineDumper(42)
+	csld2 := CustomSingleLineDumper(43)
+	runTests(t, "customDumper", map[string]interface{}{
+		"v1":  &cmld,
+		"v2":  &cmld,
+		"v2x": &cmld2,
+		"v3":  csld,
+		"v4":  &csld,
+		"v5":  &csld,
+		"v6":  &csld2,
 	})
 }
 

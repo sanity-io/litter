@@ -2,7 +2,7 @@
 
 **Litter is a pretty printer library for Go data structures to aid in debugging and testing.**
 
-It's named for the fact that it outputs *literals*, which you *litter* your output with. Aa side benefit, all Litter output is compilable Go. You can use Litter to emit data during debug, and it's also really nice for "snapshot data" in unit tests, since it produces consistent, sorted output.
+It's named for the fact that it outputs *literals*, which you *litter* your output with. As a side benefit, all Litter output is compilable Go. You can use Litter to emit data during debug, and it's also really nice for "snapshot data" in unit tests, since it produces consistent, sorted output.
 
 Litter was inspired by [Spew](https://github.com/davecgh/go-spew), but focuses on terseness and readability.
 

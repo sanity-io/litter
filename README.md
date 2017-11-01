@@ -156,7 +156,7 @@ Implement the interface Dumper on your types to take control of how your type is
 
 ``` go
 type Dumper interface {
-  Dump(w io.Writer)
+  LitterDump(w io.Writer)
 }
 ```
 
@@ -169,13 +169,13 @@ A couple of examples from the test suite:
 ``` go
 type CustomMultiLineDumper struct {}
 
-func (cmld *CustomMultiLineDumper) Dump(w io.Writer) {
+func (cmld *CustomMultiLineDumper) LitterDump(w io.Writer) {
   w.Write([]byte("{\n  multi\n  line\n}"))
 }
 
 type CustomSingleLineDumper int
 
-func (csld CustomSingleLineDumper) Dump(w io.Writer) {
+func (csld CustomSingleLineDumper) LitterDump(w io.Writer) {
   w.Write([]byte("<custom>"))
 }
 ````

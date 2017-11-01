@@ -16,7 +16,7 @@ var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\
 
 // Dumper is the interface for implementing custom dumper for your types.
 type Dumper interface {
-	Dump(w io.Writer)
+	LitterDump(w io.Writer)
 }
 
 // Options represents configuration options for litter
@@ -149,7 +149,7 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 func (s *dumpState) dumpCustom(v reflect.Value) {
 	// Run the custom dumper buffering the output
 	buf := new(bytes.Buffer)
-	dumpFunc := v.MethodByName("Dump")
+	dumpFunc := v.MethodByName("LitterDump")
 	dumpFunc.Call([]reflect.Value{reflect.ValueOf(buf)})
 
 	// Dump the type

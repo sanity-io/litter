@@ -32,13 +32,13 @@ type CustomMultiLineDumper struct {
 	Dummy int
 }
 
-func (cmld *CustomMultiLineDumper) Dump(w io.Writer) {
+func (cmld *CustomMultiLineDumper) LitterDump(w io.Writer) {
 	w.Write([]byte("{\n  multi\n  line\n}"))
 }
 
 type CustomSingleLineDumper int
 
-func (csld CustomSingleLineDumper) Dump(w io.Writer) {
+func (csld CustomSingleLineDumper) LitterDump(w io.Writer) {
 	w.Write([]byte("<custom>"))
 }
 

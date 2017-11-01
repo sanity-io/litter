@@ -1,4 +1,4 @@
-# 1.10 (2017-11-1)
+# 1.1.0 (2017-11-1)
 
 A slight breaking change. The Dump method of the `Dumper` interface has changed from `Dump` to `LitterDump` to mitigate potential collisions.
 

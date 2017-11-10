@@ -340,13 +340,13 @@ func newDumpState(value interface{}, options *Options) *dumpState {
 }
 
 // Dump a value to stdout
-func Dump(value interface{}) {
-	(&Config).Dump(value)
+func Dump(value ...interface{}) {
+	(&Config).Dump(value...)
 }
 
 // Sdump dumps a value to a string
-func Sdump(value interface{}) string {
-	return (&Config).Sdump(value)
+func Sdump(value ...interface{}) string {
+	return (&Config).Sdump(value...)
 }
 
 // Dump a value to stdout according to the options

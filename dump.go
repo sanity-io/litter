@@ -89,9 +89,7 @@ func (s *dumpState) dumpSlice(v reflect.Value) {
 		return
 	}
 	s.w.Write([]byte("{"))
-	if !s.config.Compact {
-		s.newlineWithPointerNameComment()
-	}
+	s.newlineWithPointerNameComment()
 	s.depth++
 	for i := 0; i < numEntries; i++ {
 		s.indent()

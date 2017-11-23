@@ -53,15 +53,18 @@ func (s *dumpState) indent() {
 }
 
 func (s *dumpState) newlineWithPointerNameComment() {
-	if s.config.Compact {
-		return
-	}
 	if s.currentPointerName != "" {
-		s.w.Write([]byte(fmt.Sprintf(" // %s\n", s.currentPointerName)))
+		if s.config.Compact {
+			s.w.Write([]byte(fmt.Sprintf("/*%s*/", s.currentPointerName)))
+		} else {
+			s.w.Write([]byte(fmt.Sprintf("// %s\n", s.currentPointerName)))
+		}
 		s.currentPointerName = ""
 		return
 	}
-	s.w.Write([]byte("\n"))
+	if !s.config.Compact {
+		s.w.Write([]byte("\n"))
+	}
 }
 
 func (s *dumpState) dumpType(v reflect.Value) {

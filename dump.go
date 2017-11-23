@@ -13,6 +13,7 @@ import (
 )
 
 var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\.")
+var compactTypeRegexp = regexp.MustCompile(`\s*([{};])\s*`)
 
 // Dumper is the interface for implementing custom dumper for your types.
 type Dumper interface {
@@ -21,6 +22,7 @@ type Dumper interface {
 
 // Options represents configuration options for litter
 type Options struct {
+	Compact           bool
 	StripPackageNames bool
 	HidePrivateFields bool
 	HomePackage       string
@@ -45,7 +47,9 @@ type dumpState struct {
 }
 
 func (s *dumpState) indent() {
-	s.w.Write(bytes.Repeat([]byte("  "), s.depth))
+	if !s.config.Compact {
+		s.w.Write(bytes.Repeat([]byte("  "), s.depth))
+	}
 }
 
 func (s *dumpState) newlineWithPointerNameComment() {
@@ -64,6 +68,9 @@ func (s *dumpState) dumpType(v reflect.Value) {
 	} else if s.homePackageRegexp != nil {
 		typeName = s.homePackageRegexp.ReplaceAllLiteralString(typeName, "")
 	}
+	if s.config.Compact {
+		typeName = compactTypeRegexp.ReplaceAllString(typeName, "$1")
+	}
 	s.w.Write([]byte(typeName))
 }
 
@@ -72,17 +79,27 @@ func (s *dumpState) dumpSlice(v reflect.Value) {
 	numEntries := v.Len()
 	if numEntries == 0 {
 		s.w.Write([]byte("{}"))
-		s.newlineWithPointerNameComment()
+		if s.config.Compact {
+			s.w.Write([]byte(";"))
+		} else {
+			s.newlineWithPointerNameComment()
+		}
 		return
 	}
 	s.w.Write([]byte("{"))
-	s.newlineWithPointerNameComment()
+	if !s.config.Compact {
+		s.newlineWithPointerNameComment()
+	}
 	s.depth++
 	for i := 0; i < numEntries; i++ {
 		s.indent()
 		s.dumpVal(v.Index(i))
-		s.w.Write([]byte(","))
-		s.newlineWithPointerNameComment()
+		if !s.config.Compact || i < numEntries-1 {
+			s.w.Write([]byte(","))
+		}
+		if !s.config.Compact {
+			s.newlineWithPointerNameComment()
+		}
 	}
 	s.depth--
 	s.indent()
@@ -93,7 +110,9 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 	dumpPreamble := func() {
 		s.dumpType(v)
 		s.w.Write([]byte("{"))
-		s.newlineWithPointerNameComment()
+		if !s.config.Compact {
+			s.newlineWithPointerNameComment()
+		}
 		s.depth++
 	}
 	preambleDumped := false
@@ -110,10 +129,18 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 		}
 		s.indent()
 		s.w.Write([]byte(vtf.Name))
-		s.w.Write([]byte(": "))
+		if s.config.Compact {
+			s.w.Write([]byte(":"))
+		} else {
+			s.w.Write([]byte(": "))
+		}
 		s.dumpVal(v.Field(i))
-		s.w.Write([]byte(","))
-		s.newlineWithPointerNameComment()
+		if !s.config.Compact || i < numFields-1 {
+			s.w.Write([]byte(","))
+		}
+		if !s.config.Compact {
+			s.newlineWithPointerNameComment()
+		}
 	}
 	if preambleDumped {
 		s.depth--
@@ -129,17 +156,28 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 func (s *dumpState) dumpMap(v reflect.Value) {
 	s.dumpType(v)
 	s.w.Write([]byte("{"))
-	s.newlineWithPointerNameComment()
+	if !s.config.Compact {
+		s.newlineWithPointerNameComment()
+	}
 	s.depth++
 	keys := v.MapKeys()
 	sort.Sort(mapKeySorter{keys})
-	for _, key := range keys {
+	numKeys := len(keys)
+	for i, key := range keys {
 		s.indent()
 		s.dumpVal(key)
-		s.w.Write([]byte(": "))
+		if s.config.Compact {
+			s.w.Write([]byte(":"))
+		} else {
+			s.w.Write([]byte(": "))
+		}
 		s.dumpVal(v.MapIndex(key))
-		s.w.Write([]byte(","))
-		s.newlineWithPointerNameComment()
+		if !s.config.Compact || i < numKeys-1 {
+			s.w.Write([]byte(","))
+		}
+		if !s.config.Compact {
+			s.newlineWithPointerNameComment()
+		}
 	}
 	s.depth--
 	s.indent()
@@ -154,6 +192,11 @@ func (s *dumpState) dumpCustom(v reflect.Value) {
 
 	// Dump the type
 	s.dumpType(v)
+
+	if s.config.Compact {
+		s.w.Write(buf.Bytes())
+		return
+	}
 
 	// Now output the dump taking care to apply the current indentation-level
 	// and pointer name comments.

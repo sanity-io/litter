@@ -1,5 +1,6 @@
 []interface {}{
   litter.Options{
+    Compact: false,
     StripPackageNames: false,
     HidePrivateFields: true,
     HomePackage: "",

@@ -134,6 +134,9 @@ litter.Config.HomePackage = "mypackage"
 
 // Sets separator used when multiple arguments are passed to Dump() or Sdump().
 litter.Config.Separator = "\n"
+
+// Use compact output: strip newlines and other unnecessary whitespace, and remove pointer comments
+litter.Config.Compact = true
 ```
 
 ### `litter.Options`

@@ -53,6 +53,9 @@ func (s *dumpState) indent() {
 }
 
 func (s *dumpState) newlineWithPointerNameComment() {
+	if s.config.Compact {
+		return
+	}
 	if s.currentPointerName != "" {
 		s.w.Write([]byte(fmt.Sprintf(" // %s\n", s.currentPointerName)))
 		s.currentPointerName = ""
@@ -81,9 +84,8 @@ func (s *dumpState) dumpSlice(v reflect.Value) {
 		s.w.Write([]byte("{}"))
 		if s.config.Compact {
 			s.w.Write([]byte(";"))
-		} else {
-			s.newlineWithPointerNameComment()
 		}
+		s.newlineWithPointerNameComment()
 		return
 	}
 	s.w.Write([]byte("{"))
@@ -97,9 +99,7 @@ func (s *dumpState) dumpSlice(v reflect.Value) {
 		if !s.config.Compact || i < numEntries-1 {
 			s.w.Write([]byte(","))
 		}
-		if !s.config.Compact {
-			s.newlineWithPointerNameComment()
-		}
+		s.newlineWithPointerNameComment()
 	}
 	s.depth--
 	s.indent()
@@ -110,9 +110,7 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 	dumpPreamble := func() {
 		s.dumpType(v)
 		s.w.Write([]byte("{"))
-		if !s.config.Compact {
-			s.newlineWithPointerNameComment()
-		}
+		s.newlineWithPointerNameComment()
 		s.depth++
 	}
 	preambleDumped := false
@@ -138,9 +136,7 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 		if !s.config.Compact || i < numFields-1 {
 			s.w.Write([]byte(","))
 		}
-		if !s.config.Compact {
-			s.newlineWithPointerNameComment()
-		}
+		s.newlineWithPointerNameComment()
 	}
 	if preambleDumped {
 		s.depth--
@@ -156,9 +152,7 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 func (s *dumpState) dumpMap(v reflect.Value) {
 	s.dumpType(v)
 	s.w.Write([]byte("{"))
-	if !s.config.Compact {
-		s.newlineWithPointerNameComment()
-	}
+	s.newlineWithPointerNameComment()
 	s.depth++
 	keys := v.MapKeys()
 	sort.Sort(mapKeySorter{keys})
@@ -175,9 +169,7 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 		if !s.config.Compact || i < numKeys-1 {
 			s.w.Write([]byte(","))
 		}
-		if !s.config.Compact {
-			s.newlineWithPointerNameComment()
-		}
+		s.newlineWithPointerNameComment()
 	}
 	s.depth--
 	s.indent()

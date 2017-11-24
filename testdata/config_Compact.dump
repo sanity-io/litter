@@ -1,0 +1,1 @@
+[]interface{}{litter.Options{Compact:false,StripPackageNames:false,HidePrivateFields:true,HomePackage:"",Separator:" "},&litter_test.BasicStruct{Public:1,private:2}}

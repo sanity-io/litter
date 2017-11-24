@@ -118,6 +118,9 @@ func TestSdump_config(t *testing.T) {
 		litter.Config,
 		&BasicStruct{1, 2},
 	}
+	runTestWithCfg(t, "config_Compact", &litter.Options{
+		Compact: true,
+	}, data)
 	runTestWithCfg(t, "config_HidePrivateFields", &litter.Options{
 		HidePrivateFields: true,
 	}, data)

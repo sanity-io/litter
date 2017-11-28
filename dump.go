@@ -196,7 +196,8 @@ func (s *dumpState) dumpCustom(v reflect.Value) {
 	var err error
 	firstLine := true
 	for err == nil {
-		lineBytes, err := buf.ReadBytes('\n')
+		var lineBytes []byte
+		lineBytes, err = buf.ReadBytes('\n')
 		line := strings.TrimRight(string(lineBytes), " \n")
 
 		if err != nil && err != io.EOF {
@@ -209,6 +210,7 @@ func (s *dumpState) dumpCustom(v reflect.Value) {
 			s.indent()
 		}
 		s.w.Write([]byte(line))
+
 		// At EOF we're done
 		if err == io.EOF {
 			return

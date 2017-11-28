@@ -156,7 +156,10 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 	s.newlineWithPointerNameComment()
 	s.depth++
 	keys := v.MapKeys()
-	sort.Sort(mapKeySorter{keys})
+	sort.Sort(mapKeySorter{
+		keys:    keys,
+		options: s.config,
+	})
 	numKeys := len(keys)
 	for i, key := range keys {
 		s.indent()
@@ -364,10 +367,11 @@ func (s *dumpState) pointerNameFor(v reflect.Value) (string, bool) {
 }
 
 // prepares a new state object for dumping the provided value
-func newDumpState(value interface{}, options *Options) *dumpState {
+func newDumpState(value interface{}, options *Options, writer io.Writer) *dumpState {
 	result := &dumpState{
 		config:   options,
 		pointers: MapReusedPointers(reflect.ValueOf(value)),
+		w:        writer,
 	}
 
 	if options.HomePackage != "" {
@@ -390,8 +394,7 @@ func Sdump(value ...interface{}) string {
 // Dump a value to stdout according to the options
 func (o Options) Dump(values ...interface{}) {
 	for i, value := range values {
-		state := newDumpState(value, &o)
-		state.w = os.Stdout
+		state := newDumpState(value, &o, os.Stdout)
 		if i > 0 {
 			state.w.Write([]byte(o.Separator))
 		}
@@ -407,15 +410,15 @@ func (o Options) Sdump(values ...interface{}) string {
 		if i > 0 {
 			buf.Write([]byte(o.Separator))
 		}
-		state := newDumpState(value, &o)
-		state.w = buf
+		state := newDumpState(value, &o, buf)
 		state.dump(value)
 	}
 	return buf.String()
 }
 
 type mapKeySorter struct {
-	keys []reflect.Value
+	keys    []reflect.Value
+	options *Options
 }
 
 func (s mapKeySorter) Len() int {
@@ -427,9 +430,9 @@ func (s mapKeySorter) Swap(i, j int) {
 }
 
 func (s mapKeySorter) Less(i, j int) bool {
-	if s.keys[i].CanInterface() && s.keys[j].CanInterface() {
-		return fmt.Sprintf("%s", s.keys[i].Interface()) < fmt.Sprintf("%s", s.keys[j].Interface())
-	}
-	
-	return true
+	ibuf := new(bytes.Buffer)
+	jbuf := new(bytes.Buffer)
+	newDumpState(s.keys[i], s.options, ibuf).dumpVal(s.keys[i])
+	newDumpState(s.keys[j], s.options, jbuf).dumpVal(s.keys[j])
+	return ibuf.String() < jbuf.String()
 }

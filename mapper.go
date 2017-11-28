@@ -1,6 +1,9 @@
 package litter
 
-import "reflect"
+import (
+	"reflect"
+	"sort"
+)
 
 type pointerMap struct {
 	pointers       []uintptr
@@ -50,7 +53,12 @@ func (pm *pointerMap) consider(v reflect.Value) {
 		pm.consider(v.Elem())
 
 	case reflect.Map:
-		for _, key := range v.MapKeys() {
+		keys := v.MapKeys()
+		sort.Sort(mapKeySorter{
+			keys:    keys,
+			options: &Config,
+		})
+		for _, key := range keys {
 			pm.consider(v.MapIndex(key))
 		}
 

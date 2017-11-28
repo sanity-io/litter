@@ -57,7 +57,7 @@ func (s *dumpState) newlineWithPointerNameComment() {
 		if s.config.Compact {
 			s.w.Write([]byte(fmt.Sprintf("/*%s*/", s.currentPointerName)))
 		} else {
-			s.w.Write([]byte(fmt.Sprintf("// %s\n", s.currentPointerName)))
+			s.w.Write([]byte(fmt.Sprintf(" // %s\n", s.currentPointerName)))
 		}
 		s.currentPointerName = ""
 		return

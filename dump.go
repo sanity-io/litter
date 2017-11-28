@@ -425,5 +425,9 @@ func (s mapKeySorter) Swap(i, j int) {
 }
 
 func (s mapKeySorter) Less(i, j int) bool {
-	return fmt.Sprintf("%s", s.keys[i].Interface()) < fmt.Sprintf("%s", s.keys[j].Interface())
+	if s.keys[i].CanInterface() && s.keys[j].CanInterface() {
+		return fmt.Sprintf("%s", s.keys[i].Interface()) < fmt.Sprintf("%s", s.keys[j].Interface())
+	}
+	
+	return true
 }

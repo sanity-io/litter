@@ -1,3 +1,5 @@
+[![!Build Status](https://travis-ci.org/sanity-io/litter.svg?branch=master)](https://travis-ci.org/sanity-io/litter)
+
 # Litter
 
 **Litter is a pretty printer library for Go data structures to aid in debugging and testing.**

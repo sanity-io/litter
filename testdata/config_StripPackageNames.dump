@@ -10,4 +10,7 @@
     Public: 1,
     private: 2,
   },
+  Function,
+  Dump,
+  func(string, int) (bool, error),
 }

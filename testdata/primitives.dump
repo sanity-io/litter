@@ -28,6 +28,8 @@
     Public: 1,
     private: 2,
   },
+  litter_test.Function,
+  func(string) (bool, error),
   nil,
   nil,
 }

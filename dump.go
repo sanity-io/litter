@@ -7,13 +7,14 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 )
 
 var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\.")
-var compactTypeRegexp = regexp.MustCompile(`\s*([{};])\s*`)
+var compactTypeRegexp = regexp.MustCompile(`\s*([,;{}()])\s*`)
 
 // Dumper is the interface for implementing custom dumper for your types.
 type Dumper interface {
@@ -180,6 +181,26 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 	s.w.Write([]byte("}"))
 }
 
+func (s *dumpState) dumpFunc(v reflect.Value) {
+	parts := strings.Split(runtime.FuncForPC(v.Pointer()).Name(), "/")
+	name := parts[len(parts)-1]
+
+	// Anonymous function
+	if strings.Count(name, ".") > 1 {
+		s.dumpType(v)
+	} else {
+		if s.config.StripPackageNames {
+			name = packageNameStripperRegexp.ReplaceAllLiteralString(name, "")
+		} else if s.homePackageRegexp != nil {
+			name = s.homePackageRegexp.ReplaceAllLiteralString(name, "")
+		}
+		if s.config.Compact {
+			name = compactTypeRegexp.ReplaceAllString(name, "$1")
+		}
+		s.w.Write([]byte(name))
+	}
+}
+
 func (s *dumpState) dumpCustom(v reflect.Value) {
 	// Run the custom dumper buffering the output
 	buf := new(bytes.Buffer)
@@ -325,6 +346,9 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	case reflect.Struct:
 		s.dumpStruct(v)
+
+	case reflect.Func:
+		s.dumpFunc(v)
 
 	default:
 		if v.CanInterface() {

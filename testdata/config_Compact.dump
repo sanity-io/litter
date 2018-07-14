@@ -1,1 +1,1 @@
-[]interface{}{litter.Options{Compact:false,StripPackageNames:false,HidePrivateFields:true,HomePackage:"",Separator:" "},&litter_test.BasicStruct{Public:1,private:2}}
+[]interface{}{litter.Options{Compact:false,StripPackageNames:false,HidePrivateFields:true,HomePackage:"",Separator:" "},&litter_test.BasicStruct{Public:1,private:2},litter_test.Function,litter.Dump,func(string,int)(bool,error)}

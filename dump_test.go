@@ -13,6 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Function(arg1 string, arg2 int) (string, error) {
+	return "", nil
+}
+
 type BlankStruct struct{}
 
 type BasicStruct struct {
@@ -66,6 +70,8 @@ func TestSdump_primitives(t *testing.T) {
 		BlankStruct{},
 		&BlankStruct{},
 		BasicStruct{1, 2},
+		Function,
+		func(arg string) (bool, error) { return false, nil },
 		nil,
 		interface{}(nil),
 	})
@@ -117,6 +123,9 @@ func TestSdump_config(t *testing.T) {
 	data := []interface{}{
 		litter.Config,
 		&BasicStruct{1, 2},
+		Function,
+		litter.Dump,
+		func(s string, i int) (bool, error) { return false, nil },
 	}
 	runTestWithCfg(t, "config_Compact", &litter.Options{
 		Compact: true,

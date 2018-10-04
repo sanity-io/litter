@@ -119,9 +119,31 @@ func TestSdump_nilIntefacesInStructs(t *testing.T) {
 	})
 }
 
+type testingOptions struct {
+	Compact           bool
+	StripPackageNames bool
+	HidePrivateFields bool
+	HomePackage       string
+	Separator         string
+}
+
 func TestSdump_config(t *testing.T) {
+	type options struct {
+		Compact           bool
+		StripPackageNames bool
+		HidePrivateFields bool
+		HomePackage       string
+		Separator         string
+	}
+
+	opts := options{
+		StripPackageNames: false,
+		HidePrivateFields: true,
+		Separator:         " ",
+	}
+
 	data := []interface{}{
-		litter.Config,
+		opts,
 		&BasicStruct{1, 2},
 		Function,
 		litter.Dump,

@@ -131,6 +131,9 @@ litter.Config.StripPackageNames = true
 // Hide private struct fields from dumped structs
 litter.Config.HidePrivateFields = true
 
+// Hide fields matched with given regexp if it is not nil. It is set up to hide fields generate with protoc-gen-go
+litter.Config.FieldExclusions = regexp.MustCompile(`^(XXX_.*)$`)
+
 // Sets a "home" package. The package name will be stripped from all its types
 litter.Config.HomePackage = "mypackage"
 

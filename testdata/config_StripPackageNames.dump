@@ -1,5 +1,5 @@
 []interface {}{
-  Options{
+  options{
     Compact: false,
     StripPackageNames: false,
     HidePrivateFields: true,

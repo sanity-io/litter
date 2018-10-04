@@ -1,5 +1,5 @@
 []interface {}{
-  litter.Options{
+  litter_test.options{
     Compact: false,
     StripPackageNames: false,
     HidePrivateFields: true,

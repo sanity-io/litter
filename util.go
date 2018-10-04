@@ -1,6 +1,8 @@
 package litter
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // deInterface returns values inside of non-nil interfaces when possible.
 // This is useful for data types like structs, arrays, slices, and maps which

@@ -8,7 +8,7 @@
 
 litter is provided by
 
-<a href="https://www.sanity.io/?utm_source=GitHub&utm_campaign=react-markdown" rel="nofollow" target="_blank">
+<a href="https://www.sanity.io/?utm_source=GitHub&utm_campaign=litter" rel="nofollow" target="_blank">
   <img src="https://www.sanity.io/static/images/logo_red.svg?v=2" width="300"><br />
   Sanity: The Headless CMS Construction Kit
 </a>

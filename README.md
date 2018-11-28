@@ -85,7 +85,7 @@ Litter detects circular references or aliasing, and will replace additional refe
 
 ```go
 type Circular struct {
-  Self: *Circular
+  Self *Circular
 }
 
 selfref := Circular{}

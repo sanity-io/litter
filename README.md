@@ -6,18 +6,16 @@
 
 ---
 
-litter is provided by
+Litter is provided by
 
 <a href="https://www.sanity.io/?utm_source=GitHub&utm_campaign=litter" rel="nofollow" target="_blank">
-  <img src="https://www.sanity.io/static/images/logo_red.svg?v=2" width="300"><br />
-  Sanity: The Headless CMS Construction Kit
+	<img src="https://www.sanity.io/static/images/logo_red.svg?v=2" width="300"><br />
+	Sanity: The Headless CMS Construction Kit
 </a>
 
 ---
 
-It's named for the fact that it outputs *literals*, which you *litter* your output with. As a side benefit, all Litter output is compilable Go. You can use Litter to emit data during debug, and it's also really nice for "snapshot data" in unit tests, since it produces consistent, sorted output.
-
-Litter was inspired by [Spew](https://github.com/davecgh/go-spew), but focuses on terseness and readability.
+Litter named for the fact that it outputs *literals*, which you *litter* your output with. As a side benefit, all Litter output is syntactically correct Go. You can use Litter to emit data during debug, and it's also really nice for "snapshot data" in unit tests, since it produces consistent, sorted output. Litter was inspired by [Spew](https://github.com/davecgh/go-spew), but focuses on terseness and readability.
 
 ### Basic example
 

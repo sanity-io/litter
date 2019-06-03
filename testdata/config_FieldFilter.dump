@@ -1,0 +1,10 @@
+[]interface {}{
+  litter_test.options{
+    HomePackage: "",
+    Separator: " ",
+  },
+  &litter_test.BasicStruct{},
+  litter_test.Function,
+  litter.Dump,
+  func(string, int) (bool, error),
+}

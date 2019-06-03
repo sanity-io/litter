@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"reflect"
 	"testing"
 
 	"github.com/sanity-io/litter"
@@ -160,6 +161,11 @@ func TestSdump_config(t *testing.T) {
 	}, data)
 	runTestWithCfg(t, "config_HomePackage", &litter.Options{
 		HomePackage: "litter_test",
+	}, data)
+	runTestWithCfg(t, "config_FieldFilter", &litter.Options{
+		FieldFilter: func(f reflect.StructField, v reflect.Value) bool {
+			return f.Type.Kind() == reflect.String
+		},
 	}, data)
 }
 

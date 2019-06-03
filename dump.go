@@ -27,6 +27,7 @@ type Options struct {
 	StripPackageNames bool
 	HidePrivateFields bool
 	FieldExclusions   *regexp.Regexp
+	FieldFilter       func(reflect.StructField, reflect.Value) bool
 	HomePackage       string
 	Separator         string
 }
@@ -123,6 +124,9 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 	for i := 0; i < numFields; i++ {
 		vtf := vt.Field(i)
 		if s.config.HidePrivateFields && vtf.PkgPath != "" || s.config.FieldExclusions != nil && s.config.FieldExclusions.MatchString(vtf.Name) {
+			continue
+		}
+		if s.config.FieldFilter != nil && !s.config.FieldFilter(vtf, v.Field(i)) {
 			continue
 		}
 		if !preambleDumped {

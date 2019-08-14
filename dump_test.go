@@ -9,9 +9,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/sanity-io/litter"
 )
 
 func Function(arg1 string, arg2 int) (string, error) {
@@ -38,13 +39,13 @@ type CustomMultiLineDumper struct {
 }
 
 func (cmld *CustomMultiLineDumper) LitterDump(w io.Writer) {
-	w.Write([]byte("{\n  multi\n  line\n}"))
+	_, _ = w.Write([]byte("{\n  multi\n  line\n}"))
 }
 
 type CustomSingleLineDumper int
 
 func (csld CustomSingleLineDumper) LitterDump(w io.Writer) {
-	w.Write([]byte("<custom>"))
+	_, _ = w.Write([]byte("<custom>"))
 }
 
 func TestSdump_primitives(t *testing.T) {
@@ -118,14 +119,6 @@ func TestSdump_nilIntefacesInStructs(t *testing.T) {
 		p0,
 		nil,
 	})
-}
-
-type testingOptions struct {
-	Compact           bool
-	StripPackageNames bool
-	HidePrivateFields bool
-	HomePackage       string
-	Separator         string
 }
 
 func TestSdump_config(t *testing.T) {
@@ -205,7 +198,10 @@ func runTestWithCfg(t *testing.T, name string, cfg *litter.Options, cases ...int
 		reference, err := ioutil.ReadFile(fileName)
 		if os.IsNotExist(err) {
 			t.Logf("Note: Test data file %s does not exist, writing it; verify contents!", fileName)
-			ioutil.WriteFile(fileName, []byte(dump), 0644)
+			err := ioutil.WriteFile(fileName, []byte(dump), 0644)
+			if err != nil {
+				t.Error(err)
+			}
 			return
 		}
 		assertEqualStringsWithDiff(t, string(reference), dump)

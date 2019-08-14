@@ -26,6 +26,7 @@ type Options struct {
 	Compact           bool
 	StripPackageNames bool
 	HidePrivateFields bool
+	HideZeroValues    bool
 	FieldExclusions   *regexp.Regexp
 	FieldFilter       func(reflect.StructField, reflect.Value) bool
 	HomePackage       string
@@ -127,6 +128,9 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 			continue
 		}
 		if s.config.FieldFilter != nil && !s.config.FieldFilter(vtf, v.Field(i)) {
+			continue
+		}
+		if s.config.HideZeroValues && isZeroValue(v.Field(i)) {
 			continue
 		}
 		if !preambleDumped {

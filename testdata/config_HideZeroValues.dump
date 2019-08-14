@@ -1,0 +1,13 @@
+[]interface {}{
+  litter_test.options{
+    HidePrivateFields: true,
+    Separator: " ",
+  },
+  &litter_test.BasicStruct{
+    Public: 1,
+    private: 2,
+  },
+  litter_test.Function,
+  litter.Dump,
+  func(string, int) (bool, error),
+}

@@ -149,6 +149,9 @@ func TestSdump_config(t *testing.T) {
 	runTestWithCfg(t, "config_HidePrivateFields", &litter.Options{
 		HidePrivateFields: true,
 	}, data)
+	runTestWithCfg(t, "config_HideZeroValues", &litter.Options{
+		HideZeroValues: true,
+	}, data)
 	runTestWithCfg(t, "config_StripPackageNames", &litter.Options{
 		StripPackageNames: true,
 	}, data)

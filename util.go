@@ -21,3 +21,8 @@ func isPointerValue(v reflect.Value) bool {
 	}
 	return false
 }
+
+func isZeroValue(v reflect.Value) bool {
+	return (isPointerValue(v) && v.IsNil()) ||
+		(v.IsValid() && v.CanInterface() && reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface()))
+}

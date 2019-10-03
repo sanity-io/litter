@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/alecthomas/chroma/quick"
 )
 
 var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\.")
@@ -31,6 +33,7 @@ type Options struct {
 	FieldFilter       func(reflect.StructField, reflect.Value) bool
 	HomePackage       string
 	Separator         string
+	Color             bool
 }
 
 // Config is the default config used when calling Dump
@@ -423,6 +426,19 @@ func Dump(value ...interface{}) {
 // Sdump dumps a value to a string
 func Sdump(value ...interface{}) string {
 	return (&Config).Sdump(value...)
+}
+
+// Dump a value to stdout in color
+func DumpColor(value ...interface{}) {
+	result := (&Config).Sdump(value...)
+	if err := quick.Highlight(os.Stdout, result, "go", "terminal256", "monokai"); err != nil {
+		os.Stdout.Write([]byte("[syntax highlight error: " + err.Error() + "]"))
+	}
+}
+
+// Dump a value to stdout in colour
+func DumpColour(value ...interface{}) {
+	DumpColor(value...)
 }
 
 // Dump a value to stdout according to the options

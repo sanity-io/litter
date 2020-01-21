@@ -5,12 +5,15 @@
     HidePrivateFields: true,
     HomePackage: "",
     Separator: " ",
+    StrictGo: false,
   },
   &BasicStruct{
     Public: 1,
     private: 2,
   },
   Function,
+  &20,
+  &20,
   litter.Dump,
   func(string, int) (bool, error),
 }

@@ -31,6 +31,7 @@ type Options struct {
 	FieldFilter       func(reflect.StructField, reflect.Value) bool
 	HomePackage       string
 	Separator         string
+	StrictGo          bool
 }
 
 // Config is the default config used when calling Dump
@@ -345,8 +346,14 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	case reflect.Ptr:
 		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
-			s.w.Write([]byte("&"))
-			s.dumpVal(v.Elem())
+			if s.config.StrictGo {
+				fmt.Fprintf(s.w, "(func(v %s) *%s { return &v })(", v.Elem().Type(), v.Elem().Type())
+				s.dumpVal(v.Elem())
+				fmt.Fprintf(s.w, ")")
+			} else {
+				s.w.Write([]byte("&"))
+				s.dumpVal(v.Elem())
+			}
 		}
 
 	case reflect.Map:

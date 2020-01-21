@@ -7,12 +7,13 @@
     Separator: " ",
     StrictGo: false,
   },
-  &litter_test.BasicStruct{
+  (func(v litter_test.BasicStruct) *litter_test.BasicStruct { return &v })(litter_test.BasicStruct{
     Public: 1,
-  },
+    private: 2,
+  }),
   litter_test.Function,
-  &20,
-  &20,
+  (func(v int) *int { return &v })(20),
+  (func(v litter_test.IntAlias) *litter_test.IntAlias { return &v })(20),
   litter.Dump,
   func(string, int) (bool, error),
 }

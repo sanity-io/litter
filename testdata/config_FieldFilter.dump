@@ -5,6 +5,8 @@
   },
   &litter_test.BasicStruct{},
   litter_test.Function,
+  &20,
+  &20,
   litter.Dump,
   func(string, int) (bool, error),
 }

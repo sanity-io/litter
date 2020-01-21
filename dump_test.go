@@ -133,6 +133,7 @@ func TestSdump_config(t *testing.T) {
 		HidePrivateFields bool
 		HomePackage       string
 		Separator         string
+		StrictGo          bool
 	}
 
 	opts := options{
@@ -145,6 +146,8 @@ func TestSdump_config(t *testing.T) {
 		opts,
 		&BasicStruct{1, 2},
 		Function,
+		(func(v int) *int { return &v })(20),
+		(func(v IntAlias) *IntAlias { return &v })(20),
 		litter.Dump,
 		func(s string, i int) (bool, error) { return false, nil },
 	}
@@ -167,6 +170,9 @@ func TestSdump_config(t *testing.T) {
 		FieldFilter: func(f reflect.StructField, v reflect.Value) bool {
 			return f.Type.Kind() == reflect.String
 		},
+	}, data)
+	runTestWithCfg(t, "config_StrictGo", &litter.Options{
+		StrictGo: true,
 	}, data)
 }
 

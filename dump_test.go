@@ -26,6 +26,8 @@ type BasicStruct struct {
 	private int
 }
 
+type IntAlias int
+
 type InterfaceStruct struct {
 	Ifc interface{}
 }
@@ -66,12 +68,15 @@ func TestSdump_primitives(t *testing.T) {
 		float64(12.3),
 		complex64(12 + 10.5i),
 		complex128(-1.2 - 0.1i),
+		(func(v int) *int { return &v })(10),
 		"string with \"quote\"",
 		[]int{1, 2, 3},
 		interface{}("hello from interface"),
 		BlankStruct{},
 		&BlankStruct{},
 		BasicStruct{1, 2},
+		IntAlias(10),
+		(func(v IntAlias) *IntAlias { return &v })(10),
 		Function,
 		func(arg string) (bool, error) { return false, nil },
 		nil,

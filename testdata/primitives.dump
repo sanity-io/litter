@@ -15,6 +15,7 @@
   12.3,
   complex64(12+10.5i),
   complex128(-1.2-0.1i),
+  &10,
   "string with \"quote\"",
   []int{
     1,
@@ -28,6 +29,8 @@
     Public: 1,
     private: 2,
   },
+  10,
+  &10,
   litter_test.Function,
   func(string) (bool, error),
   nil,

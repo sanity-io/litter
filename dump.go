@@ -34,6 +34,11 @@ type Options struct {
 	HomePackage       string
 	Separator         string
 	StrictGo          bool
+
+	// DisablePointerReplacement, if true, disables the replacing of pointer data with variable names
+	// when it's safe. This is useful for diffing two structures, where pointer variables would cause
+	// false changes. However, circular graphs are still detected and elided to avoid infinite output.
+	DisablePointerReplacement bool
 }
 
 // Config is the default config used when calling Dump
@@ -48,8 +53,9 @@ type dumpState struct {
 	w                  io.Writer
 	depth              int
 	config             *Options
-	pointers           []uintptr
-	visitedPointers    []uintptr
+	pointers           ptrmap
+	visitedPointers    ptrmap
+	parentPointers     ptrmap
 	currentPointerName string
 	homePackageRegexp  *regexp.Regexp
 }
@@ -71,11 +77,11 @@ func (s *dumpState) indent() {
 }
 
 func (s *dumpState) newlineWithPointerNameComment() {
-	if s.currentPointerName != "" {
+	if name := s.currentPointerName; name != "" {
 		if s.config.Compact {
-			s.write([]byte(fmt.Sprintf("/*%s*/", s.currentPointerName)))
+			s.write([]byte(fmt.Sprintf("/*%s*/", name)))
 		} else {
-			s.write([]byte(fmt.Sprintf(" // %s\n", s.currentPointerName)))
+			s.write([]byte(fmt.Sprintf(" // %s\n", name)))
 		}
 		s.currentPointerName = ""
 		return
@@ -276,17 +282,39 @@ func (s *dumpState) dump(value interface{}) {
 	s.dumpVal(v)
 }
 
-func (s *dumpState) handlePointerAliasingAndCheckIfShouldDescend(value reflect.Value) bool {
+func (s *dumpState) descendIntoPossiblePointer(value reflect.Value, f func()) {
+	canonicalize := true
+	if isPointerValue(value) {
+		ptr := value.Pointer()
+
+		// If elision disabled, and this is not a circular reference, don't canonicalize
+		if s.config.DisablePointerReplacement && s.parentPointers.add(ptr) {
+			canonicalize = false
+		}
+
+		// Add to stack of pointers we're recursively descending into
+		s.parentPointers.add(ptr)
+		defer s.parentPointers.remove(ptr)
+	}
+
+	if !canonicalize {
+		pointerName, _ := s.pointerNameFor(value)
+		s.currentPointerName = pointerName
+		f()
+		return
+	}
+
 	pointerName, firstVisit := s.pointerNameFor(value)
 	if pointerName == "" {
-		return true
+		f()
+		return
 	}
 	if firstVisit {
 		s.currentPointerName = pointerName
-		return true
+		f()
+		return
 	}
 	s.write([]byte(pointerName))
-	return false
 }
 
 func (s *dumpState) dumpVal(value reflect.Value) {
@@ -301,9 +329,9 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	// Handle custom dumpers
 	dumperType := reflect.TypeOf((*Dumper)(nil)).Elem()
 	if v.Type().Implements(dumperType) {
-		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
+		s.descendIntoPossiblePointer(v, func() {
 			s.dumpCustom(v)
-		}
+		})
 		return
 	}
 
@@ -345,9 +373,9 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 		fallthrough
 
 	case reflect.Array:
-		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
+		s.descendIntoPossiblePointer(v, func() {
 			s.dumpSlice(v)
-		}
+		})
 
 	case reflect.Interface:
 		// The only time we should get here is for nil interfaces due to
@@ -357,7 +385,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 		}
 
 	case reflect.Ptr:
-		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
+		s.descendIntoPossiblePointer(v, func() {
 			if s.config.StrictGo {
 				s.writeString(fmt.Sprintf("(func(v %s) *%s { return &v })(", v.Elem().Type(), v.Elem().Type()))
 				s.dumpVal(v.Elem())
@@ -366,12 +394,12 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 				s.writeString("&")
 				s.dumpVal(v.Elem())
 			}
-		}
+		})
 
 	case reflect.Map:
-		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
+		s.descendIntoPossiblePointer(v, func() {
 			s.dumpMap(v)
-		}
+		})
 
 	case reflect.Struct:
 		s.dumpStruct(v)
@@ -388,19 +416,6 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	}
 }
 
-// call to signal that the pointer is being visited, returns true if this is the
-// first visit to that pointer. Used to detect when to output the entire contents
-// behind a pointer (the first time), and when to just emit a name (all other times)
-func (s *dumpState) visitPointerAndCheckIfItIsTheFirstTime(ptr uintptr) bool {
-	for _, addr := range s.visitedPointers {
-		if addr == ptr {
-			return false
-		}
-	}
-	s.visitedPointers = append(s.visitedPointers, ptr)
-	return true
-}
-
 // registers that the value has been visited and checks to see if it is one of the
 // pointers we will see multiple times. If it is, it returns a temporary name for this
 // pointer. It also returns a boolean value indicating whether this is the first time
@@ -409,11 +424,9 @@ func (s *dumpState) visitPointerAndCheckIfItIsTheFirstTime(ptr uintptr) bool {
 func (s *dumpState) pointerNameFor(v reflect.Value) (string, bool) {
 	if isPointerValue(v) {
 		ptr := v.Pointer()
-		for i, addr := range s.pointers {
-			if ptr == addr {
-				firstVisit := s.visitPointerAndCheckIfItIsTheFirstTime(ptr)
-				return fmt.Sprintf("p%d", i), firstVisit
-			}
+		if info, ok := s.pointers[ptr]; ok {
+			firstVisit := s.visitedPointers.add(ptr)
+			return fmt.Sprintf("p%d", info.order), firstVisit
 		}
 	}
 	return "", false
@@ -423,7 +436,7 @@ func (s *dumpState) pointerNameFor(v reflect.Value) (string, bool) {
 func newDumpState(value interface{}, options *Options, writer io.Writer) *dumpState {
 	result := &dumpState{
 		config:   options,
-		pointers: MapReusedPointers(reflect.ValueOf(value)),
+		pointers: mapReusedPointers(reflect.ValueOf(value)),
 		w:        writer,
 	}
 

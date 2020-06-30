@@ -13,8 +13,10 @@ import (
 	"strings"
 )
 
-var packageNameStripperRegexp = regexp.MustCompile("\\b[a-zA-Z_]+[a-zA-Z_0-9]+\\.")
-var compactTypeRegexp = regexp.MustCompile(`\s*([,;{}()])\s*`)
+var (
+	packageNameStripperRegexp = regexp.MustCompile(`\b[a-zA-Z_]+[a-zA-Z_0-9]+\.`)
+	compactTypeRegexp         = regexp.MustCompile(`\s*([,;{}()])\s*`)
+)
 
 // Dumper is the interface for implementing custom dumper for your types.
 type Dumper interface {

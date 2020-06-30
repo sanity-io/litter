@@ -54,24 +54,34 @@ type dumpState struct {
 	homePackageRegexp  *regexp.Regexp
 }
 
+func (s *dumpState) write(b []byte) {
+	if _, err := s.w.Write(b); err != nil {
+		panic(err)
+	}
+}
+
+func (s *dumpState) writeString(str string) {
+	s.write([]byte(str))
+}
+
 func (s *dumpState) indent() {
 	if !s.config.Compact {
-		s.w.Write(bytes.Repeat([]byte("  "), s.depth))
+		s.write(bytes.Repeat([]byte("  "), s.depth))
 	}
 }
 
 func (s *dumpState) newlineWithPointerNameComment() {
 	if s.currentPointerName != "" {
 		if s.config.Compact {
-			s.w.Write([]byte(fmt.Sprintf("/*%s*/", s.currentPointerName)))
+			s.write([]byte(fmt.Sprintf("/*%s*/", s.currentPointerName)))
 		} else {
-			s.w.Write([]byte(fmt.Sprintf(" // %s\n", s.currentPointerName)))
+			s.write([]byte(fmt.Sprintf(" // %s\n", s.currentPointerName)))
 		}
 		s.currentPointerName = ""
 		return
 	}
 	if !s.config.Compact {
-		s.w.Write([]byte("\n"))
+		s.write([]byte("\n"))
 	}
 }
 
@@ -85,40 +95,40 @@ func (s *dumpState) dumpType(v reflect.Value) {
 	if s.config.Compact {
 		typeName = compactTypeRegexp.ReplaceAllString(typeName, "$1")
 	}
-	s.w.Write([]byte(typeName))
+	s.write([]byte(typeName))
 }
 
 func (s *dumpState) dumpSlice(v reflect.Value) {
 	s.dumpType(v)
 	numEntries := v.Len()
 	if numEntries == 0 {
-		s.w.Write([]byte("{}"))
+		s.write([]byte("{}"))
 		if s.config.Compact {
-			s.w.Write([]byte(";"))
+			s.write([]byte(";"))
 		}
 		s.newlineWithPointerNameComment()
 		return
 	}
-	s.w.Write([]byte("{"))
+	s.write([]byte("{"))
 	s.newlineWithPointerNameComment()
 	s.depth++
 	for i := 0; i < numEntries; i++ {
 		s.indent()
 		s.dumpVal(v.Index(i))
 		if !s.config.Compact || i < numEntries-1 {
-			s.w.Write([]byte(","))
+			s.write([]byte(","))
 		}
 		s.newlineWithPointerNameComment()
 	}
 	s.depth--
 	s.indent()
-	s.w.Write([]byte("}"))
+	s.write([]byte("}"))
 }
 
 func (s *dumpState) dumpStruct(v reflect.Value) {
 	dumpPreamble := func() {
 		s.dumpType(v)
-		s.w.Write([]byte("{"))
+		s.write([]byte("{"))
 		s.newlineWithPointerNameComment()
 		s.depth++
 	}
@@ -141,32 +151,32 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 			preambleDumped = true
 		}
 		s.indent()
-		s.w.Write([]byte(vtf.Name))
+		s.write([]byte(vtf.Name))
 		if s.config.Compact {
-			s.w.Write([]byte(":"))
+			s.write([]byte(":"))
 		} else {
-			s.w.Write([]byte(": "))
+			s.write([]byte(": "))
 		}
 		s.dumpVal(v.Field(i))
 		if !s.config.Compact || i < numFields-1 {
-			s.w.Write([]byte(","))
+			s.write([]byte(","))
 		}
 		s.newlineWithPointerNameComment()
 	}
 	if preambleDumped {
 		s.depth--
 		s.indent()
-		s.w.Write([]byte("}"))
+		s.write([]byte("}"))
 	} else {
 		// There were no fields dumped
 		s.dumpType(v)
-		s.w.Write([]byte("{}"))
+		s.write([]byte("{}"))
 	}
 }
 
 func (s *dumpState) dumpMap(v reflect.Value) {
 	s.dumpType(v)
-	s.w.Write([]byte("{"))
+	s.write([]byte("{"))
 	s.newlineWithPointerNameComment()
 	s.depth++
 	keys := v.MapKeys()
@@ -179,19 +189,19 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 		s.indent()
 		s.dumpVal(key)
 		if s.config.Compact {
-			s.w.Write([]byte(":"))
+			s.write([]byte(":"))
 		} else {
-			s.w.Write([]byte(": "))
+			s.write([]byte(": "))
 		}
 		s.dumpVal(v.MapIndex(key))
 		if !s.config.Compact || i < numKeys-1 {
-			s.w.Write([]byte(","))
+			s.write([]byte(","))
 		}
 		s.newlineWithPointerNameComment()
 	}
 	s.depth--
 	s.indent()
-	s.w.Write([]byte("}"))
+	s.write([]byte("}"))
 }
 
 func (s *dumpState) dumpFunc(v reflect.Value) {
@@ -210,7 +220,7 @@ func (s *dumpState) dumpFunc(v reflect.Value) {
 		if s.config.Compact {
 			name = compactTypeRegexp.ReplaceAllString(name, "$1")
 		}
-		s.w.Write([]byte(name))
+		s.write([]byte(name))
 	}
 }
 
@@ -224,7 +234,7 @@ func (s *dumpState) dumpCustom(v reflect.Value) {
 	s.dumpType(v)
 
 	if s.config.Compact {
-		s.w.Write(buf.Bytes())
+		s.write(buf.Bytes())
 		return
 	}
 
@@ -246,7 +256,7 @@ func (s *dumpState) dumpCustom(v reflect.Value) {
 		} else {
 			s.indent()
 		}
-		s.w.Write([]byte(line))
+		s.write([]byte(line))
 
 		// At EOF we're done
 		if err == io.EOF {
@@ -275,13 +285,13 @@ func (s *dumpState) handlePointerAliasingAndCheckIfShouldDescend(value reflect.V
 		s.currentPointerName = pointerName
 		return true
 	}
-	s.w.Write([]byte(pointerName))
+	s.write([]byte(pointerName))
 	return false
 }
 
 func (s *dumpState) dumpVal(value reflect.Value) {
 	if value.Kind() == reflect.Ptr && value.IsNil() {
-		s.w.Write([]byte("nil"))
+		s.write([]byte("nil"))
 		return
 	}
 
@@ -301,7 +311,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	case reflect.Invalid:
 		// Do nothing.  We should never get here since invalid has already
 		// been handled above.
-		s.w.Write([]byte("<invalid>"))
+		s.write([]byte("<invalid>"))
 
 	case reflect.Bool:
 		printBool(s.w, v.Bool())
@@ -325,7 +335,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 		printComplex(s.w, v.Complex(), 64)
 
 	case reflect.String:
-		s.w.Write([]byte(strconv.Quote(v.String())))
+		s.write([]byte(strconv.Quote(v.String())))
 
 	case reflect.Slice:
 		if v.IsNil() {
@@ -349,11 +359,11 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	case reflect.Ptr:
 		if s.handlePointerAliasingAndCheckIfShouldDescend(v) {
 			if s.config.StrictGo {
-				fmt.Fprintf(s.w, "(func(v %s) *%s { return &v })(", v.Elem().Type(), v.Elem().Type())
+				s.writeString(fmt.Sprintf("(func(v %s) *%s { return &v })(", v.Elem().Type(), v.Elem().Type()))
 				s.dumpVal(v.Elem())
-				fmt.Fprintf(s.w, ")")
+				s.writeString(")")
 			} else {
-				s.w.Write([]byte("&"))
+				s.writeString("&")
 				s.dumpVal(v.Elem())
 			}
 		}
@@ -371,9 +381,9 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	default:
 		if v.CanInterface() {
-			fmt.Fprintf(s.w, "%v", v.Interface())
+			s.writeString(fmt.Sprintf("%v", v.Interface()))
 		} else {
-			fmt.Fprintf(s.w, "%v", v.String())
+			s.writeString(fmt.Sprintf("%v", v.String()))
 		}
 	}
 }
@@ -439,11 +449,11 @@ func (o Options) Dump(values ...interface{}) {
 	for i, value := range values {
 		state := newDumpState(value, &o, os.Stdout)
 		if i > 0 {
-			state.w.Write([]byte(o.Separator))
+			state.write([]byte(o.Separator))
 		}
 		state.dump(value)
 	}
-	os.Stdout.Write([]byte("\n"))
+	_, _ = os.Stdout.Write([]byte("\n"))
 }
 
 // Sdump dumps a value to a string according to the options
@@ -451,7 +461,7 @@ func (o Options) Sdump(values ...interface{}) string {
 	buf := new(bytes.Buffer)
 	for i, value := range values {
 		if i > 0 {
-			buf.Write([]byte(o.Separator))
+			_, _ = buf.Write([]byte(o.Separator))
 		}
 		state := newDumpState(value, &o, buf)
 		state.dump(value)

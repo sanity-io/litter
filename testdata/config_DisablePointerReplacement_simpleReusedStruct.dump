@@ -1,0 +1,10 @@
+[]interface {}{
+  &litter_test.BasicStruct{ // p0
+    Public: 1,
+    private: 2,
+  },
+  &litter_test.BasicStruct{ // p0
+    Public: 1,
+    private: 2,
+  },
+}

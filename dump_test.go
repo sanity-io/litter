@@ -151,6 +151,7 @@ func TestSdump_config(t *testing.T) {
 		litter.Dump,
 		func(s string, i int) (bool, error) { return false, nil },
 	}
+
 	runTestWithCfg(t, "config_Compact", &litter.Options{
 		Compact: true,
 	}, data)
@@ -174,6 +175,16 @@ func TestSdump_config(t *testing.T) {
 	runTestWithCfg(t, "config_StrictGo", &litter.Options{
 		StrictGo: true,
 	}, data)
+
+	basic := &BasicStruct{1, 2}
+	runTestWithCfg(t, "config_DisablePointerReplacement_simpleReusedStruct", &litter.Options{
+		DisablePointerReplacement: true,
+	}, []interface{}{basic, basic})
+	circular := &RecursiveStruct{}
+	circular.Ptr = circular
+	runTestWithCfg(t, "config_DisablePointerReplacement_circular", &litter.Options{
+		DisablePointerReplacement: true,
+	}, circular)
 }
 
 func TestSdump_multipleArgs(t *testing.T) {

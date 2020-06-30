@@ -5,33 +5,55 @@ import (
 	"sort"
 )
 
-type pointerMap struct {
-	pointers       []uintptr
-	reusedPointers []uintptr
+// MapReusedPointers takes a structure, and recursively maps all pointers mentioned in the tree,
+// detecting circular references, and providing a list of all pointers that was referenced at
+// least twice by the provided structure.
+func MapReusedPointers(v reflect.Value) []uintptr {
+	pm := &pointerVisitor{}
+	pm.consider(v)
+	if len(pm.reusedPointers) == 0 {
+		return nil
+	}
+
+	a := make([]uintptr, 0, len(pm.reusedPointers))
+	for k := range pm.reusedPointers {
+		a = append(a, k)
+	}
+	return a
 }
 
-// MapReusedPointers : Given a structure, it will recurively map all pointers mentioned in the tree, breaking
-// circular references and provide a list of all pointers that was referenced at least twice
-// by the provided structure.
-func MapReusedPointers(v reflect.Value) []uintptr {
-	pm := &pointerMap{
-		reusedPointers: []uintptr{},
+type ptrmap map[uintptr]struct{}
+
+func (pm *ptrmap) contains(p uintptr) bool {
+	if *pm != nil {
+		_, ok := (*pm)[p]
+		return ok
 	}
-	pm.consider(v)
-	return pm.reusedPointers
+	return false
+}
+
+func (pm *ptrmap) add(p uintptr) {
+	if !pm.contains(p) {
+		if *pm == nil {
+			*pm = make(map[uintptr]struct{}, 31)
+		}
+		(*pm)[p] = struct{}{}
+	}
+}
+
+type pointerVisitor struct {
+	pointers       ptrmap
+	reusedPointers ptrmap
 }
 
 // Recursively consider v and each of its children, updating the map according to the
 // semantics of MapReusedPointers
-func (pm *pointerMap) consider(v reflect.Value) {
+func (pm *pointerVisitor) consider(v reflect.Value) {
 	if v.Kind() == reflect.Invalid {
 		return
 	}
-	// fmt.Printf("Considering [%s] %#v\n\r", v.Type().String(), v.Interface())
 	if isPointerValue(v) && v.Pointer() != 0 { // pointer is 0 for unexported fields
-		// fmt.Printf("Ptr is %d\n\r", v.Pointer())
-		reused := pm.addPointerReturnTrueIfWasReused(v.Pointer())
-		if reused {
+		if pm.addPointerReturnTrueIfWasReused(v.Pointer()) {
 			// No use descending inside this value, since it have been seen before and all its descendants
 			// have been considered
 			return
@@ -71,22 +93,20 @@ func (pm *pointerMap) consider(v reflect.Value) {
 }
 
 // addPointer to the pointerMap, update reusedPointers. Returns true if pointer was reused
-func (pm *pointerMap) addPointerReturnTrueIfWasReused(ptr uintptr) bool {
+func (pm *pointerVisitor) addPointerReturnTrueIfWasReused(ptr uintptr) bool {
 	// Is this allready known to be reused?
-	for _, have := range pm.reusedPointers {
-		if ptr == have {
-			return true
-		}
+	if pm.reusedPointers.contains(ptr) {
+		return true
 	}
+
 	// Have we seen it once before?
-	for _, seen := range pm.pointers {
-		if ptr == seen {
-			// Add it to the register of pointers we have seen more than once
-			pm.reusedPointers = append(pm.reusedPointers, ptr)
-			return true
-		}
+	if pm.pointers.contains(ptr) {
+		// Add it to the register of pointers we have seen more than once
+		pm.reusedPointers.add(ptr)
+		return true
 	}
+
 	// This pointer was new to us
-	pm.pointers = append(pm.pointers, ptr)
+	pm.pointers.add(ptr)
 	return false
 }

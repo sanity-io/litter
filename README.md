@@ -151,6 +151,10 @@ litter.Config.Separator = "\n"
 
 // Use compact output: strip newlines and other unnecessary whitespace
 litter.Config.Compact = true
+
+// Prevents duplicate pointers from being replaced by placeholder variable names (except in necessary, in the case
+// of circular references)
+litter.Config.DisablePointerReplacement = true
 ```
 
 ### `litter.Options`

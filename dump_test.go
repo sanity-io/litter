@@ -175,6 +175,22 @@ func TestSdump_config(t *testing.T) {
 	runTestWithCfg(t, "config_StrictGo", &litter.Options{
 		StrictGo: true,
 	}, data)
+	runTestWithCfg(t, "config_DumpFunc", &litter.Options{
+		DumpFunc: func(v reflect.Value, w io.Writer) bool {
+			if !v.CanInterface() {
+				return false
+			}
+			if b, ok := v.Interface().(bool); ok {
+				if b {
+					io.WriteString(w, `"on"`)
+				} else {
+					io.WriteString(w, `"off"`)
+				}
+				return true
+			}
+			return false
+		},
+	}, data)
 
 	basic := &BasicStruct{1, 2}
 	runTestWithCfg(t, "config_DisablePointerReplacement_simpleReusedStruct", &litter.Options{

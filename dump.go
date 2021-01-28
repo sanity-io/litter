@@ -34,6 +34,7 @@ type Options struct {
 	HomePackage       string
 	Separator         string
 	StrictGo          bool
+	DumpFunc          func(reflect.Value, io.Writer) bool
 
 	// DisablePointerReplacement, if true, disables the replacing of pointer data with variable names
 	// when it's safe. This is useful for diffing two structures, where pointer variables would cause
@@ -230,11 +231,7 @@ func (s *dumpState) dumpFunc(v reflect.Value) {
 	}
 }
 
-func (s *dumpState) dumpCustom(v reflect.Value) {
-	// Run the custom dumper buffering the output
-	buf := new(bytes.Buffer)
-	dumpFunc := v.MethodByName("LitterDump")
-	dumpFunc.Call([]reflect.Value{reflect.ValueOf(buf)})
+func (s *dumpState) dumpCustom(v reflect.Value, buf *bytes.Buffer) {
 
 	// Dump the type
 	s.dumpType(v)
@@ -326,11 +323,24 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	v := deInterface(value)
 	kind := v.Kind()
 
+	// Try to handle with dump func
+	if s.config.DumpFunc != nil {
+		buf := new(bytes.Buffer)
+		if s.config.DumpFunc(v, buf) {
+			s.dumpCustom(v, buf)
+			return
+		}
+	}
+
 	// Handle custom dumpers
 	dumperType := reflect.TypeOf((*Dumper)(nil)).Elem()
 	if v.Type().Implements(dumperType) {
 		s.descendIntoPossiblePointer(v, func() {
-			s.dumpCustom(v)
+			// Run the custom dumper buffering the output
+			buf := new(bytes.Buffer)
+			dumpFunc := v.MethodByName("LitterDump")
+			dumpFunc.Call([]reflect.Value{reflect.ValueOf(buf)})
+			s.dumpCustom(v, buf)
 		})
 		return
 	}

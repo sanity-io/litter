@@ -15,31 +15,58 @@ func mapReusedPointers(v reflect.Value) ptrmap {
 }
 
 // A map of pointers.
-type (
-	ptrinfo struct {
-		order int
+type ptrinfo struct {
+	order int
+}
+
+type ptrkey struct {
+	p uintptr
+	t reflect.Type
+}
+
+func ptrkeyFor(v reflect.Value) (k ptrkey) {
+	k.p = v.Pointer()
+	for v.Kind() == reflect.Ptr {
+		v = v.Elem()
 	}
-	ptrmap map[uintptr]ptrinfo
-)
+	if v.IsValid() {
+		k.t = v.Type()
+	}
+	return
+}
+
+type ptrmap struct {
+	count int
+	m     map[ptrkey]ptrinfo
+}
 
 // Returns true if contains a pointer.
-func (pm *ptrmap) contains(p uintptr) bool {
-	if *pm != nil {
-		_, ok := (*pm)[p]
+func (pm *ptrmap) contains(v reflect.Value) bool {
+	if pm.m != nil {
+		_, ok := pm.m[ptrkeyFor(v)]
 		return ok
 	}
 	return false
 }
 
+// Gets a pointer.
+func (pm *ptrmap) get(v reflect.Value) (ptrinfo, bool) {
+	if pm.m != nil {
+		p, ok := pm.m[ptrkeyFor(v)]
+		return p, ok
+	}
+	return ptrinfo{}, false
+}
+
 // Removes a pointer.
-func (pm *ptrmap) remove(p uintptr) {
-	if *pm != nil {
-		delete(*pm, p)
+func (pm *ptrmap) remove(v reflect.Value) {
+	if pm.m != nil {
+		delete(pm.m, ptrkeyFor(v))
 	}
 }
 
 // Adds a pointer.
-func (pm *ptrmap) add(p uintptr) bool {
+func (pm *ptrmap) add(p reflect.Value) bool {
 	if pm.contains(p) {
 		return false
 	}
@@ -48,11 +75,12 @@ func (pm *ptrmap) add(p uintptr) bool {
 }
 
 // Adds a pointer (slow path).
-func (pm *ptrmap) put(p uintptr) {
-	if *pm == nil {
-		*pm = make(map[uintptr]ptrinfo, 31)
+func (pm *ptrmap) put(v reflect.Value) {
+	if pm.m == nil {
+		pm.m = make(map[ptrkey]ptrinfo, 31)
 	}
-	(*pm)[p] = ptrinfo{order: len(*pm)}
+	pm.m[ptrkeyFor(v)] = ptrinfo{order: pm.count}
+	pm.count++
 }
 
 type pointerVisitor struct {
@@ -66,8 +94,8 @@ func (pv *pointerVisitor) consider(v reflect.Value) {
 	if v.Kind() == reflect.Invalid {
 		return
 	}
-	if isPointerValue(v) && v.Pointer() != 0 { // pointer is 0 for unexported fields
-		if pv.tryAddPointer(v.Pointer()) {
+	if isPointerValue(v) { // pointer is 0 for unexported fields
+		if pv.tryAddPointer(v) {
 			// No use descending inside this value, since it have been seen before and all its descendants
 			// have been considered
 			return
@@ -107,20 +135,20 @@ func (pv *pointerVisitor) consider(v reflect.Value) {
 }
 
 // addPointer to the pointerMap, update reusedPointers. Returns true if pointer was reused
-func (pv *pointerVisitor) tryAddPointer(p uintptr) bool {
+func (pv *pointerVisitor) tryAddPointer(v reflect.Value) bool {
 	// Is this allready known to be reused?
-	if pv.reused.contains(p) {
+	if pv.reused.contains(v) {
 		return true
 	}
 
 	// Have we seen it once before?
-	if pv.pointers.contains(p) {
+	if pv.pointers.contains(v) {
 		// Add it to the register of pointers we have seen more than once
-		pv.reused.add(p)
+		pv.reused.add(v)
 		return true
 	}
 
 	// This pointer was new to us
-	pv.pointers.add(p)
+	pv.pointers.add(v)
 	return false
 }

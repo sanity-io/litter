@@ -284,16 +284,14 @@ func (s *dumpState) dump(value interface{}) {
 func (s *dumpState) descendIntoPossiblePointer(value reflect.Value, f func()) {
 	canonicalize := true
 	if isPointerValue(value) {
-		ptr := value.Pointer()
-
 		// If elision disabled, and this is not a circular reference, don't canonicalize
-		if s.config.DisablePointerReplacement && s.parentPointers.add(ptr) {
+		if s.config.DisablePointerReplacement && s.parentPointers.add(value) {
 			canonicalize = false
 		}
 
 		// Add to stack of pointers we're recursively descending into
-		s.parentPointers.add(ptr)
-		defer s.parentPointers.remove(ptr)
+		s.parentPointers.add(value)
+		defer s.parentPointers.remove(value)
 	}
 
 	if !canonicalize {
@@ -435,9 +433,8 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 // has been dumped before or not.
 func (s *dumpState) pointerNameFor(v reflect.Value) (string, bool) {
 	if isPointerValue(v) {
-		ptr := v.Pointer()
-		if info, ok := s.pointers[ptr]; ok {
-			firstVisit := s.visitedPointers.add(ptr)
+		if info, ok := s.pointers.get(v); ok {
+			firstVisit := s.visitedPointers.add(v)
 			return fmt.Sprintf("p%d", info.order), firstVisit
 		}
 	}

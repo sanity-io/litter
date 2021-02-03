@@ -110,10 +110,6 @@ func (s *dumpState) dumpSlice(v reflect.Value) {
 	numEntries := v.Len()
 	if numEntries == 0 {
 		s.write([]byte("{}"))
-		if s.config.Compact {
-			s.write([]byte(";"))
-		}
-		s.newlineWithPointerNameComment()
 		return
 	}
 	s.write([]byte("{"))
@@ -187,7 +183,6 @@ func (s *dumpState) dumpMap(v reflect.Value) {
 	keys := v.MapKeys()
 	if len(keys) == 0 {
 		s.write([]byte("{}"))
-		s.newlineWithPointerNameComment()
 		return
 	}
 

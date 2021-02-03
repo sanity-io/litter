@@ -183,10 +183,17 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 
 func (s *dumpState) dumpMap(v reflect.Value) {
 	s.dumpType(v)
+
+	keys := v.MapKeys()
+	if len(keys) == 0 {
+		s.write([]byte("{}"))
+		s.newlineWithPointerNameComment()
+		return
+	}
+
 	s.write([]byte("{"))
 	s.newlineWithPointerNameComment()
 	s.depth++
-	keys := v.MapKeys()
 	sort.Sort(mapKeySorter{
 		keys:    keys,
 		options: s.config,

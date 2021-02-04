@@ -315,13 +315,13 @@ func (s *dumpState) descendIntoPossiblePointer(value reflect.Value, f func()) {
 }
 
 func (s *dumpState) dumpVal(value reflect.Value) {
-	if value.Kind() == reflect.Ptr && value.IsNil() {
+	v := deInterface(value)
+	kind := v.Kind()
+
+	if kind == reflect.Ptr && v.IsNil() {
 		s.write([]byte("nil"))
 		return
 	}
-
-	v := deInterface(value)
-	kind := v.Kind()
 
 	// Try to handle with dump func
 	if s.config.DumpFunc != nil {

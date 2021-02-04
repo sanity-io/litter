@@ -1,6 +1,7 @@
 package litter
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 )
@@ -16,7 +17,16 @@ func mapReusedPointers(v reflect.Value) ptrmap {
 
 // A map of pointers.
 type ptrinfo struct {
-	order int
+	id     int
+	parent *ptrmap
+}
+
+func (p *ptrinfo) label() string {
+	if p.id == -1 {
+		p.id = p.parent.count
+		p.parent.count++
+	}
+	return fmt.Sprintf("p%d", p.id)
 }
 
 type ptrkey struct {
@@ -36,8 +46,8 @@ func ptrkeyFor(v reflect.Value) (k ptrkey) {
 }
 
 type ptrmap struct {
+	m     map[ptrkey]*ptrinfo
 	count int
-	m     map[ptrkey]ptrinfo
 }
 
 // Returns true if contains a pointer.
@@ -50,12 +60,12 @@ func (pm *ptrmap) contains(v reflect.Value) bool {
 }
 
 // Gets a pointer.
-func (pm *ptrmap) get(v reflect.Value) (ptrinfo, bool) {
+func (pm *ptrmap) get(v reflect.Value) (*ptrinfo, bool) {
 	if pm.m != nil {
 		p, ok := pm.m[ptrkeyFor(v)]
 		return p, ok
 	}
-	return ptrinfo{}, false
+	return nil, false
 }
 
 // Removes a pointer.
@@ -77,10 +87,13 @@ func (pm *ptrmap) add(p reflect.Value) bool {
 // Adds a pointer (slow path).
 func (pm *ptrmap) put(v reflect.Value) {
 	if pm.m == nil {
-		pm.m = make(map[ptrkey]ptrinfo, 31)
+		pm.m = make(map[ptrkey]*ptrinfo, 31)
 	}
-	pm.m[ptrkeyFor(v)] = ptrinfo{order: pm.count}
-	pm.count++
+
+	key := ptrkeyFor(v)
+	if _, ok := pm.m[key]; !ok {
+		pm.m[key] = &ptrinfo{id: -1, parent: pm}
+	}
 }
 
 type pointerVisitor struct {

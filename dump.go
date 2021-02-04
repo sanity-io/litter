@@ -51,14 +51,14 @@ var Config = Options{
 }
 
 type dumpState struct {
-	w                  io.Writer
-	depth              int
-	config             *Options
-	pointers           ptrmap
-	visitedPointers    ptrmap
-	parentPointers     ptrmap
-	currentPointerName string
-	homePackageRegexp  *regexp.Regexp
+	w                 io.Writer
+	depth             int
+	config            *Options
+	pointers          ptrmap
+	visitedPointers   ptrmap
+	parentPointers    ptrmap
+	currentPointer    *ptrinfo
+	homePackageRegexp *regexp.Regexp
 }
 
 func (s *dumpState) write(b []byte) {
@@ -78,13 +78,13 @@ func (s *dumpState) indent() {
 }
 
 func (s *dumpState) newlineWithPointerNameComment() {
-	if name := s.currentPointerName; name != "" {
+	if ptr := s.currentPointer; ptr != nil {
 		if s.config.Compact {
-			s.write([]byte(fmt.Sprintf("/*%s*/", name)))
+			s.write([]byte(fmt.Sprintf("/*%s*/", ptr.label())))
 		} else {
-			s.write([]byte(fmt.Sprintf(" // %s\n", name)))
+			s.write([]byte(fmt.Sprintf(" // %s\n", ptr.label())))
 		}
-		s.currentPointerName = ""
+		s.currentPointer = nil
 		return
 	}
 	if !s.config.Compact {
@@ -295,23 +295,23 @@ func (s *dumpState) descendIntoPossiblePointer(value reflect.Value, f func()) {
 	}
 
 	if !canonicalize {
-		pointerName, _ := s.pointerNameFor(value)
-		s.currentPointerName = pointerName
+		ptr, _ := s.pointerFor(value)
+		s.currentPointer = ptr
 		f()
 		return
 	}
 
-	pointerName, firstVisit := s.pointerNameFor(value)
-	if pointerName == "" {
+	ptr, firstVisit := s.pointerFor(value)
+	if ptr == nil {
 		f()
 		return
 	}
 	if firstVisit {
-		s.currentPointerName = pointerName
+		s.currentPointer = ptr
 		f()
 		return
 	}
-	s.write([]byte(pointerName))
+	s.write([]byte(ptr.label()))
 }
 
 func (s *dumpState) dumpVal(value reflect.Value) {
@@ -431,14 +431,14 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 // pointer. It also returns a boolean value indicating whether this is the first time
 // this name is returned so the caller can decide whether the contents of the pointer
 // has been dumped before or not.
-func (s *dumpState) pointerNameFor(v reflect.Value) (string, bool) {
+func (s *dumpState) pointerFor(v reflect.Value) (*ptrinfo, bool) {
 	if isPointerValue(v) {
 		if info, ok := s.pointers.get(v); ok {
 			firstVisit := s.visitedPointers.add(v)
-			return fmt.Sprintf("p%d", info.order), firstVisit
+			return info, firstVisit
 		}
 	}
-	return "", false
+	return nil, false
 }
 
 // prepares a new state object for dumping the provided value

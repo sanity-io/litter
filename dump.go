@@ -36,6 +36,10 @@ type Options struct {
 	StrictGo          bool
 	DumpFunc          func(reflect.Value, io.Writer) bool
 
+	// DisableMethods specifies whether or not error and Stringer interfaces are
+	// invoked for types that implement them.
+	DisableMethods bool
+
 	// DisablePointerReplacement, if true, disables the replacing of pointer data with variable names
 	// when it's safe. This is useful for diffing two structures, where pointer variables would cause
 	// false changes. However, circular graphs are still detected and elided to avoid infinite output.
@@ -332,15 +336,12 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 		}
 	}
 
-	// Handle custom dumpers
-	dumperType := reflect.TypeOf((*Dumper)(nil)).Elem()
-	if v.Type().Implements(dumperType) {
+	if ok, fn := s.implMethods(v); ok {
 		s.descendIntoPossiblePointer(v, func() {
-			// Run the custom dumper buffering the output
-			buf := new(bytes.Buffer)
-			dumpFunc := v.MethodByName("LitterDump")
-			dumpFunc.Call([]reflect.Value{reflect.ValueOf(buf)})
-			s.dumpCustom(v, buf)
+			defer catchPanic(s.w, v)
+			b := new(bytes.Buffer)
+			fn(b)
+			s.dumpCustom(v, b)
 		})
 		return
 	}
@@ -439,6 +440,40 @@ func (s *dumpState) pointerNameFor(v reflect.Value) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// implMethods checks whether the v implements the Dumper/error/fmt.Stringer interfaces or not.
+// If implemented, the interface method can be called via the fn.
+func (s *dumpState) implMethods(v reflect.Value) (implemented bool, fn func(w io.Writer)) {
+	if !v.IsValid() || !v.CanInterface() {
+		return
+	}
+
+	switch iface := v.Interface().(type) {
+	case Dumper:
+		implemented = true
+		fn = func(w io.Writer) { iface.LitterDump(w) }
+
+	case error:
+		if !s.config.DisableMethods {
+			implemented = true
+			fn = func(w io.Writer) {
+				w.Write([]byte{' '})
+				w.Write([]byte(iface.Error()))
+			}
+		}
+
+	case fmt.Stringer:
+		if !s.config.DisableMethods {
+			implemented = true
+			fn = func(w io.Writer) {
+				w.Write([]byte{' '})
+				w.Write([]byte(iface.String()))
+			}
+		}
+	}
+
+	return
 }
 
 // prepares a new state object for dumping the provided value

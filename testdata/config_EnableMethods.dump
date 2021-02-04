@@ -1,0 +1,8 @@
+[]interface {}{
+  litter_test.StructImplStringer String() called,
+  *litter_test.StructImplStringer String() called,
+  nil,
+  litter_test.StructImplError Error() called,
+  *litter_test.StructImplError Error() called,
+  nil,
+}

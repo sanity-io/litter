@@ -36,6 +36,8 @@ type RecursiveStruct struct {
 	Ptr *RecursiveStruct
 }
 
+type CustomMap map[string]int
+
 type CustomMultiLineDumper struct {
 	Dummy int
 }
@@ -81,6 +83,8 @@ func TestSdump_primitives(t *testing.T) {
 		func(arg string) (bool, error) { return false, nil },
 		nil,
 		interface{}(nil),
+		CustomMap{},
+		CustomMap(nil),
 	})
 }
 

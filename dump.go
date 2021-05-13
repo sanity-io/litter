@@ -178,6 +178,12 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 }
 
 func (s *dumpState) dumpMap(v reflect.Value) {
+	if v.IsNil() {
+		s.dumpType(v)
+		s.writeString("(nil)")
+		return
+	}
+
 	s.dumpType(v)
 
 	keys := v.MapKeys()

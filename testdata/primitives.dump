@@ -35,4 +35,6 @@
   func(string) (bool, error),
   nil,
   nil,
+  litter_test.CustomMap{},
+  litter_test.CustomMap(nil),
 }

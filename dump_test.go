@@ -53,6 +53,10 @@ func (csld CustomSingleLineDumper) LitterDump(w io.Writer) {
 }
 
 func TestSdump_primitives(t *testing.T) {
+	messages := make(chan string, 3)
+	sends := make(chan<- int64, 1)
+	receives := make(<-chan uint64)
+
 	runTests(t, "primitives", []interface{}{
 		false,
 		true,
@@ -85,6 +89,9 @@ func TestSdump_primitives(t *testing.T) {
 		interface{}(nil),
 		CustomMap{},
 		CustomMap(nil),
+		messages,
+		sends,
+		receives,
 	})
 }
 

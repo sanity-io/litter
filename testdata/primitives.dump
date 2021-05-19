@@ -37,4 +37,7 @@
   nil,
   litter_test.CustomMap{},
   litter_test.CustomMap(nil),
+  chan string,
+  chan<- int64,
+  <-chan uint64,
 }

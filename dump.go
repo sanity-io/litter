@@ -239,6 +239,12 @@ func (s *dumpState) dumpFunc(v reflect.Value) {
 	}
 }
 
+func (s *dumpState) dumpChan(v reflect.Value) {
+	vType := v.Type()
+	res := []byte(vType.String())
+	s.write(res)
+}
+
 func (s *dumpState) dumpCustom(v reflect.Value, buf *bytes.Buffer) {
 
 	// Dump the type
@@ -422,6 +428,9 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	case reflect.Func:
 		s.dumpFunc(v)
+
+	case reflect.Chan:
+		s.dumpChan(v)
 
 	default:
 		if v.CanInterface() {

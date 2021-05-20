@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
 	"testing"
 
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/sanity-io/litter"
 )
 
 func Function(arg1 string, arg2 int) (string, error) {
@@ -313,4 +313,47 @@ func messageFromMsgAndArgs(msgAndArgs ...interface{}) string {
 		return fmt.Sprintf(msgAndArgs[0].(string), msgAndArgs[1:]...)
 	}
 	return ""
+}
+
+func Test_dumpState_dumpSlice(t *testing.T) {
+
+	t.Run("hello", func(t *testing.T) {
+
+		mySlice := []int{}
+		for i := 0; i < 10; i++ {
+			mySlice = append(mySlice, i)
+		}
+		litter.Dump("mySlice: ", mySlice)
+
+		fmt.Println()
+
+		myArray := [15]int{}
+		for i := 0; i < 10; i++ {
+			myArray[i] = i
+		}
+		litter.Dump("myArray: ", myArray)
+
+		fmt.Println()
+
+		myMap := map[int]string{}
+		for i := 0; i < 10; i++ {
+			myMap[i] = fmt.Sprint(i)
+		}
+		litter.Dump("myMap: ", myMap)
+
+		fmt.Println()
+		fmt.Println()
+		type Table struct {
+			Nails [15]int
+		}
+		type House struct {
+			Name   string
+			Chairs []int
+			HTTP   http.Request
+			T      Table
+		}
+		house := House{Name: "KICC", Chairs: mySlice, HTTP: http.Request{Method: "POST"}, T: Table{Nails: myArray}}
+		litter.Dump("house: ", house)
+
+	})
 }

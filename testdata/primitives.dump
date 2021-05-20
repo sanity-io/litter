@@ -17,11 +17,7 @@
   complex128(-1.2-0.1i),
   &10,
   "string with \"quote\"",
-  []int{
-    1,
-    2,
-    3,
-  },
+  []int{1,2,3},
   "hello from interface",
   litter_test.BlankStruct{},
   &litter_test.BlankStruct{},

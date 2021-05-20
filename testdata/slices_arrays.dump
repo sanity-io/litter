@@ -1,0 +1,40 @@
+[]interface {}{
+  []string{"a","b","c","d","e","f"},
+  [15]int{1,2,3,4,5,6,7,8,78999,4,90000,0,0,0,0},
+  []litter_test.BasicStruct{
+    litter_test.BasicStruct{
+      Public: 1,
+      private: 1,
+    },
+    litter_test.BasicStruct{
+      Public: 2,
+      private: 2,
+    },
+    litter_test.BasicStruct{
+      Public: 3,
+      private: 3,
+    },
+  },
+  [5]litter_test.BasicStruct{
+    litter_test.BasicStruct{
+      Public: 1,
+      private: 1,
+    },
+    litter_test.BasicStruct{
+      Public: 2,
+      private: 2,
+    },
+    litter_test.BasicStruct{
+      Public: 3,
+      private: 3,
+    },
+    litter_test.BasicStruct{
+      Public: 0,
+      private: 0,
+    },
+    litter_test.BasicStruct{
+      Public: 0,
+      private: 0,
+    },
+  },
+}

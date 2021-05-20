@@ -248,6 +248,23 @@ func TestSdump_maps(t *testing.T) {
 	})
 }
 
+func TestSdump_slices(t *testing.T) {
+	runTests(t, "slices_arrays", []interface{}{
+		[]string{"a", "b", "c", "d", "e", "f"},
+		[15]int{1, 2, 3, 4, 5, 6, 7, 8, 78_999, 4, 90_000},
+		[]BasicStruct{
+			BasicStruct{Public: 1, private: 1},
+			BasicStruct{Public: 2, private: 2},
+			BasicStruct{Public: 3, private: 3},
+		},
+		[5]BasicStruct{
+			BasicStruct{Public: 1, private: 1},
+			BasicStruct{Public: 2, private: 2},
+			BasicStruct{Public: 3, private: 3},
+		},
+	})
+}
+
 var standardCfg = litter.Options{}
 
 func runTestWithCfg(t *testing.T, name string, cfg *litter.Options, cases ...interface{}) {

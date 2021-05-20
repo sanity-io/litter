@@ -1,14 +1,6 @@
 []interface {}{
-  map[string]string{
-    "another string": "indeed",
-    "hello": "there",
-    "something": "something something",
-  },
-  map[int]string{
-    1: "one",
-    2: "two",
-    3: "three",
-  },
+  map[string]string{"another string":"indeed","hello":"there","something":"something something"},
+  map[int]string{1:"one",2:"two",3:"three"},
   map[int]*litter_test.BlankStruct{
     2: &litter_test.BlankStruct{},
   },

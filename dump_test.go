@@ -238,6 +238,13 @@ func TestSdump_maps(t *testing.T) {
 		map[int]*BlankStruct{
 			2: &BlankStruct{},
 		},
+		map[string]BasicStruct{
+			"one":   BasicStruct{Public: 1, private: 1},
+			"two":   BasicStruct{Public: 2, private: 2},
+			"three": BasicStruct{Public: 3, private: 3},
+			"four":  BasicStruct{Public: 4, private: 4},
+			"five":  BasicStruct{Public: 5, private: 5},
+		},
 	})
 }
 

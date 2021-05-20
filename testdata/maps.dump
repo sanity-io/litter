@@ -4,4 +4,26 @@
   map[int]*litter_test.BlankStruct{
     2: &litter_test.BlankStruct{},
   },
+  map[string]litter_test.BasicStruct{
+    "five": litter_test.BasicStruct{
+      Public: 5,
+      private: 5,
+    },
+    "four": litter_test.BasicStruct{
+      Public: 4,
+      private: 4,
+    },
+    "one": litter_test.BasicStruct{
+      Public: 1,
+      private: 1,
+    },
+    "three": litter_test.BasicStruct{
+      Public: 3,
+      private: 3,
+    },
+    "two": litter_test.BasicStruct{
+      Public: 2,
+      private: 2,
+    },
+  },
 }

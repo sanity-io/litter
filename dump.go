@@ -106,11 +106,16 @@ func (s *dumpState) dumpType(v reflect.Value) {
 }
 
 func (s *dumpState) dumpSlice(v reflect.Value) {
-	original := s.config.Compact
-	s.config.Compact = true
-	defer func() {
-		s.config.Compact = original
-	}()
+	elmType := v.Type().Elem()
+	switch elmType.Kind() {
+	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32, reflect.Float64, reflect.String:
+		// For primites types, dump them in a compact manner
+		original := s.config.Compact
+		s.config.Compact = true
+		defer func() {
+			s.config.Compact = original
+		}()
+	}
 
 	s.dumpType(v)
 	numEntries := v.Len()
@@ -184,6 +189,10 @@ func (s *dumpState) dumpStruct(v reflect.Value) {
 }
 
 func (s *dumpState) dumpMap(v reflect.Value) {
+	// TODO: inspec maps underlying keys and values.
+	// If values(not keys) are the primitive types; then dump them in compact manner.
+	// see: `dumpSlice`
+
 	if v.IsNil() {
 		s.dumpType(v)
 		s.writeString("(nil)")

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
@@ -57,42 +56,43 @@ func TestSdump_primitives(t *testing.T) {
 	sends := make(chan<- int64, 1)
 	receives := make(<-chan uint64)
 
-	runTests(t, "primitives", []interface{}{
-		false,
-		true,
-		7,
-		int8(10),
-		int16(10),
-		int32(10),
-		int64(10),
-		uint8(10),
-		uint16(10),
-		uint32(10),
-		uint64(10),
-		uint(10),
-		float32(12.3),
-		float64(12.3),
-		complex64(12 + 10.5i),
-		complex128(-1.2 - 0.1i),
-		(func(v int) *int { return &v })(10),
-		"string with \"quote\"",
-		[]int{1, 2, 3},
-		interface{}("hello from interface"),
-		BlankStruct{},
-		&BlankStruct{},
-		BasicStruct{1, 2},
-		IntAlias(10),
-		(func(v IntAlias) *IntAlias { return &v })(10),
-		Function,
-		func(arg string) (bool, error) { return false, nil },
-		nil,
-		interface{}(nil),
-		CustomMap{},
-		CustomMap(nil),
-		messages,
-		sends,
-		receives,
-	})
+	runTests(t, "primitives",
+		map[string]interface{}{
+			"1":  false,
+			"2":  true,
+			"3":  7,
+			"4":  int8(10),
+			"5":  int16(10),
+			"6":  int32(10),
+			"7":  int64(10),
+			"8":  uint8(10),
+			"9":  uint16(10),
+			"10": uint32(10),
+			"11": uint64(10),
+			"12": uint(10),
+			"13": float32(12.3),
+			"14": float64(12.3),
+			"15": complex64(12 + 10.5i),
+			"16": complex128(-1.2 - 0.1i),
+			"17": (func(v int) *int { return &v })(10),
+			"18": "string with \"quote\"",
+			"19": []int{1, 2, 3},
+			"20": interface{}("hello from interface"),
+			"21": BlankStruct{},
+			"22": &BlankStruct{},
+			"23": BasicStruct{1, 2},
+			"24": IntAlias(10),
+			"25": (func(v IntAlias) *IntAlias { return &v })(10),
+			"26": Function,
+			"27": func(arg string) (bool, error) { return false, nil },
+			"28": nil,
+			"29": interface{}(nil),
+			"30": CustomMap{},
+			"31": CustomMap(nil),
+			"32": messages,
+			"33": sends,
+			"34": receives,
+		})
 }
 
 func TestSdump_customDumper(t *testing.T) {
@@ -313,47 +313,4 @@ func messageFromMsgAndArgs(msgAndArgs ...interface{}) string {
 		return fmt.Sprintf(msgAndArgs[0].(string), msgAndArgs[1:]...)
 	}
 	return ""
-}
-
-func Test_dumpState_dumpSlice(t *testing.T) {
-
-	t.Run("hello", func(t *testing.T) {
-
-		mySlice := []int{}
-		for i := 0; i < 10; i++ {
-			mySlice = append(mySlice, i)
-		}
-		litter.Dump("mySlice: ", mySlice)
-
-		fmt.Println()
-
-		myArray := [15]int{}
-		for i := 0; i < 10; i++ {
-			myArray[i] = i
-		}
-		litter.Dump("myArray: ", myArray)
-
-		fmt.Println()
-
-		myMap := map[int]string{}
-		for i := 0; i < 10; i++ {
-			myMap[i] = fmt.Sprint(i)
-		}
-		litter.Dump("myMap: ", myMap)
-
-		fmt.Println()
-		fmt.Println()
-		type Table struct {
-			Nails [15]int
-		}
-		type House struct {
-			Name   string
-			Chairs []int
-			HTTP   http.Request
-			T      Table
-		}
-		house := House{Name: "KICC", Chairs: mySlice, HTTP: http.Request{Method: "POST"}, T: Table{Nails: myArray}}
-		litter.Dump("house: ", house)
-
-	})
 }

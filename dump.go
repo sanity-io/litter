@@ -106,6 +106,12 @@ func (s *dumpState) dumpType(v reflect.Value) {
 }
 
 func (s *dumpState) dumpSlice(v reflect.Value) {
+	original := s.config.Compact
+	s.config.Compact = true
+	defer func() {
+		s.config.Compact = original
+	}()
+
 	s.dumpType(v)
 	numEntries := v.Len()
 	if numEntries == 0 {

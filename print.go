@@ -2,6 +2,7 @@ package litter
 
 import (
 	"io"
+	"math"
 	"strconv"
 )
 
@@ -22,7 +23,12 @@ func printUint(w io.Writer, val uint64, base int) {
 }
 
 func printFloat(w io.Writer, val float64, precision int) {
-	w.Write([]byte(strconv.FormatFloat(val, 'g', -1, precision)))
+	if math.Trunc(val) == val {
+		// Ensure that floats like 1.0 are always printed with a decimal point
+		w.Write([]byte(strconv.FormatFloat(val, 'f', 1, precision)))
+	} else {
+		w.Write([]byte(strconv.FormatFloat(val, 'g', -1, precision)))
+	}
 }
 
 func printComplex(w io.Writer, c complex128, floatPrecision int) {

@@ -72,6 +72,8 @@ func TestSdump_primitives(t *testing.T) {
 		uint(10),
 		float32(12.3),
 		float64(12.3),
+		float32(1.0),
+		float64(1.0),
 		complex64(12 + 10.5i),
 		complex128(-1.2 - 0.1i),
 		(func(v int) *int { return &v })(10),

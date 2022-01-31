@@ -1,7 +1,14 @@
 package litter
 
 import (
+	"fmt"
+	"io"
 	"reflect"
+)
+
+var (
+	percentBangString = []byte("%!(PANIC=")
+	closeParent       = []byte{')'}
 )
 
 // deInterface returns values inside of non-nil interfaces when possible.
@@ -25,4 +32,17 @@ func isPointerValue(v reflect.Value) bool {
 func isZeroValue(v reflect.Value) bool {
 	return (isPointerValue(v) && v.IsNil()) ||
 		(v.IsValid() && v.CanInterface() && reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface()))
+}
+
+func catchPanic(w io.Writer, v reflect.Value) {
+	if err := recover(); err != nil {
+		if v.Kind() == reflect.Ptr && v.IsNil() {
+			printNil(w)
+			return
+		}
+
+		w.Write(percentBangString)
+		fmt.Fprintf(w, "%v", err)
+		w.Write(closeParent)
+	}
 }

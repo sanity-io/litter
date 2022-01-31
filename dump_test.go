@@ -52,6 +52,22 @@ func (csld CustomSingleLineDumper) LitterDump(w io.Writer) {
 	_, _ = w.Write([]byte("<custom>"))
 }
 
+type StructImplStringer struct{}
+
+func (s StructImplStringer) String() string {
+	return "String() called"
+}
+
+type StructImplError struct{}
+
+func (s StructImplError) String() string {
+	return "String() called"
+}
+
+func (s StructImplError) Error() string {
+	return "Error() called"
+}
+
 func TestSdump_primitives(t *testing.T) {
 	messages := make(chan string, 3)
 	sends := make(chan<- int64, 1)
@@ -240,6 +256,19 @@ func TestSdump_maps(t *testing.T) {
 		map[int]*BlankStruct{
 			2: &BlankStruct{},
 		},
+	})
+}
+
+func TestSdump_methods(t *testing.T) {
+	runTestWithCfg(t, "config_EnableMethods", &litter.Options{
+		DisableMethods: false,
+	}, []interface{}{
+		StructImplStringer{},
+		&StructImplStringer{},
+		(*StructImplStringer)(nil),
+		StructImplError{},
+		&StructImplError{},
+		(*StructImplError)(nil),
 	})
 }
 

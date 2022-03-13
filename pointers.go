@@ -136,6 +136,7 @@ func (pv *pointerVisitor) consider(v reflect.Value) {
 			options: &Config,
 		})
 		for _, key := range keys {
+			pv.consider(key)
 			pv.consider(v.MapIndex(key))
 		}
 

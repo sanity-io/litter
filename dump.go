@@ -457,10 +457,10 @@ func (s *dumpState) pointerFor(v reflect.Value) (*ptrinfo, bool) {
 }
 
 // prepares a new state object for dumping the provided value
-func newDumpState(value interface{}, options *Options, writer io.Writer) *dumpState {
+func newDumpState(value reflect.Value, options *Options, writer io.Writer) *dumpState {
 	result := &dumpState{
 		config:   options,
-		pointers: mapReusedPointers(reflect.ValueOf(value)),
+		pointers: mapReusedPointers(value),
 		w:        writer,
 	}
 
@@ -484,7 +484,7 @@ func Sdump(value ...interface{}) string {
 // Dump a value to stdout according to the options
 func (o Options) Dump(values ...interface{}) {
 	for i, value := range values {
-		state := newDumpState(value, &o, os.Stdout)
+		state := newDumpState(reflect.ValueOf(value), &o, os.Stdout)
 		if i > 0 {
 			state.write([]byte(o.Separator))
 		}
@@ -500,7 +500,7 @@ func (o Options) Sdump(values ...interface{}) string {
 		if i > 0 {
 			_, _ = buf.Write([]byte(o.Separator))
 		}
-		state := newDumpState(value, &o, buf)
+		state := newDumpState(reflect.ValueOf(value), &o, buf)
 		state.dump(value)
 	}
 	return buf.String()

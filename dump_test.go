@@ -243,6 +243,21 @@ func TestSdump_maps(t *testing.T) {
 	})
 }
 
+func TestSdump_RecursiveMaps(t *testing.T) {
+	mp := make(map[*RecursiveStruct]*RecursiveStruct)
+	k1 := &RecursiveStruct{}
+	k1.Ptr = k1
+	v1 := &RecursiveStruct{}
+	v1.Ptr = v1
+	k2 := &RecursiveStruct{}
+	k2.Ptr = k2
+	v2 := &RecursiveStruct{}
+	v2.Ptr = v2
+	mp[k1] = v1
+	mp[k2] = v2
+	runTests(t, "recursive_maps", mp)
+}
+
 var standardCfg = litter.Options{}
 
 func runTestWithCfg(t *testing.T, name string, cfg *litter.Options, cases ...interface{}) {

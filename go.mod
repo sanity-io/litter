@@ -1,6 +1,6 @@
 module github.com/sanity-io/litter
 
-go 1.14
+go 1.16
 
 require (
 	github.com/davecgh/go-spew v0.0.0-20161028175848-04cdfd42973b // indirect

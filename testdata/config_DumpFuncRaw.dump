@@ -1,0 +1,19 @@
+[]interface {}{
+  litter_test.options{
+    Compact: "off",
+    StripPackageNames: "off",
+    HidePrivateFields: "on",
+    HomePackage: "",
+    Separator: " ",
+    StrictGo: "off",
+  },
+  &litter_test.BasicStruct{
+    Public: 1,
+    private: 2,
+  },
+  litter_test.Function,
+  &20,
+  &20,
+  litter.Dump,
+  func(string, int) (bool, error),
+}

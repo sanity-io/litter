@@ -23,6 +23,12 @@ type Dumper interface {
 	LitterDump(w io.Writer)
 }
 
+// DumperRaw is the interface for implementing custom dumper for your types.
+// Unlike with Dumper, data type won't be written into the writer.
+type DumperRaw interface {
+	LitterDumpRaw(w io.Writer)
+}
+
 // Options represents configuration options for litter
 type Options struct {
 	Compact           bool
@@ -35,6 +41,7 @@ type Options struct {
 	Separator         string
 	StrictGo          bool
 	DumpFunc          func(reflect.Value, io.Writer) bool
+	DumpRawFunc       func(reflect.Value, io.Writer) bool
 
 	// DisablePointerReplacement, if true, disables the replacing of pointer data with variable names
 	// when it's safe. This is useful for diffing two structures, where pointer variables would cause
@@ -245,10 +252,12 @@ func (s *dumpState) dumpChan(v reflect.Value) {
 	s.write(res)
 }
 
-func (s *dumpState) dumpCustom(v reflect.Value, buf *bytes.Buffer) {
+func (s *dumpState) dumpCustom(v reflect.Value, buf *bytes.Buffer, dumpType bool) {
 
-	// Dump the type
-	s.dumpType(v)
+	if dumpType {
+		// Dump the type
+		s.dumpType(v)
+	}
 
 	if s.config.Compact {
 		s.write(buf.Bytes())
@@ -339,7 +348,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	if s.config.DumpFunc != nil {
 		buf := new(bytes.Buffer)
 		if s.config.DumpFunc(v, buf) {
-			s.dumpCustom(v, buf)
+			s.dumpCustom(v, buf, true)
 			return
 		}
 	}
@@ -352,7 +361,29 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 			buf := new(bytes.Buffer)
 			dumpFunc := v.MethodByName("LitterDump")
 			dumpFunc.Call([]reflect.Value{reflect.ValueOf(buf)})
-			s.dumpCustom(v, buf)
+			s.dumpCustom(v, buf, true)
+		})
+		return
+	}
+
+	// Try to handle with dump raw func
+	if s.config.DumpRawFunc != nil {
+		buf := new(bytes.Buffer)
+		if s.config.DumpRawFunc(v, buf) {
+			s.dumpCustom(v, buf, false)
+			return
+		}
+	}
+
+	// Handle custom raw dumpers
+	rawDumperType := reflect.TypeOf((*DumperRaw)(nil)).Elem()
+	if v.Type().Implements(rawDumperType) {
+		s.descendIntoPossiblePointer(v, func() {
+			// Run the custom raw dumper buffering the output
+			buf := new(bytes.Buffer)
+			dumpFunc := v.MethodByName("LitterDumpRaw")
+			dumpFunc.Call([]reflect.Value{reflect.ValueOf(buf)})
+			s.dumpCustom(v, buf, false)
 		})
 		return
 	}

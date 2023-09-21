@@ -53,6 +53,20 @@ func (csld CustomSingleLineDumper) LitterDump(w io.Writer) {
 	_, _ = w.Write([]byte("<custom>"))
 }
 
+type CustomMultiLineDumperRaw struct {
+	Dummy int
+}
+
+func (cmld *CustomMultiLineDumperRaw) LitterDumpRaw(w io.Writer) {
+	_, _ = w.Write([]byte("{\n  multi\n  line\n}"))
+}
+
+type CustomSingleLineDumperRaw int
+
+func (csld CustomSingleLineDumperRaw) LitterDumpRaw(w io.Writer) {
+	_, _ = w.Write([]byte("<custom>"))
+}
+
 func TestSdump_primitives(t *testing.T) {
 	messages := make(chan string, 3)
 	sends := make(chan<- int64, 1)
@@ -104,6 +118,22 @@ func TestSdump_customDumper(t *testing.T) {
 	csld := CustomSingleLineDumper(42)
 	csld2 := CustomSingleLineDumper(43)
 	runTests(t, "customDumper", map[string]interface{}{
+		"v1":  &cmld,
+		"v2":  &cmld,
+		"v2x": &cmld2,
+		"v3":  csld,
+		"v4":  &csld,
+		"v5":  &csld,
+		"v6":  &csld2,
+	})
+}
+
+func TestSdump_customDumperRaw(t *testing.T) {
+	cmld := CustomMultiLineDumperRaw{Dummy: 1}
+	cmld2 := CustomMultiLineDumperRaw{Dummy: 2}
+	csld := CustomSingleLineDumperRaw(42)
+	csld2 := CustomSingleLineDumperRaw(43)
+	runTests(t, "customDumperRaw", map[string]interface{}{
 		"v1":  &cmld,
 		"v2":  &cmld,
 		"v2x": &cmld2,
@@ -208,6 +238,22 @@ func TestSdump_config(t *testing.T) {
 	}, data)
 	runTestWithCfg(t, "config_FormatTime", &litter.Options{
 		FormatTime: true,
+	}, data)
+	runTestWithCfg(t, "config_DumpRawFunc", &litter.Options{
+		DumpRawFunc: func(v reflect.Value, w io.Writer) bool {
+			if !v.CanInterface() {
+				return false
+			}
+			if b, ok := v.Interface().(bool); ok {
+				if b {
+					io.WriteString(w, `"on"`)
+				} else {
+					io.WriteString(w, `"off"`)
+				}
+				return true
+			}
+			return false
+		},
 	}, data)
 
 	basic := &BasicStruct{1, 2}

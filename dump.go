@@ -471,12 +471,17 @@ func newDumpState(value reflect.Value, options *Options, writer io.Writer) *dump
 	return result
 }
 
-// Dump a value to stdout
+// Dump a value to stdout.
 func Dump(value ...interface{}) {
 	(&Config).Dump(value...)
 }
 
-// Sdump dumps a value to a string
+// D dumps a value to stdout, and is a shorthand for [Dump].
+func D(value ...interface{}) {
+	Dump(value...)
+}
+
+// Sdump dumps a value to a string.
 func Sdump(value ...interface{}) string {
 	return (&Config).Sdump(value...)
 }

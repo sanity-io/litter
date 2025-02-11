@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -40,6 +41,9 @@ type Options struct {
 	// when it's safe. This is useful for diffing two structures, where pointer variables would cause
 	// false changes. However, circular graphs are still detected and elided to avoid infinite output.
 	DisablePointerReplacement bool
+
+	// FormatTime, if true, will format [time.Time] values.
+	FormatTime bool
 }
 
 // Config is the default config used when calling Dump
@@ -59,6 +63,7 @@ type dumpState struct {
 	parentPointers    ptrmap
 	currentPointer    *ptrinfo
 	homePackageRegexp *regexp.Regexp
+	timeFormatter     func(t time.Time) string
 }
 
 func (s *dumpState) write(b []byte) {
@@ -129,6 +134,12 @@ func (s *dumpState) dumpSlice(v reflect.Value) {
 }
 
 func (s *dumpState) dumpStruct(v reflect.Value) {
+	val := v.Interface()
+	if t, ok := val.(time.Time); ok && s.timeFormatter != nil {
+		s.writeString(s.timeFormatter(t))
+		return
+	}
+
 	dumpPreamble := func() {
 		s.dumpType(v)
 		s.write([]byte("{"))
@@ -246,7 +257,6 @@ func (s *dumpState) dumpChan(v reflect.Value) {
 }
 
 func (s *dumpState) dumpCustom(v reflect.Value, buf *bytes.Buffer) {
-
 	// Dump the type
 	s.dumpType(v)
 
@@ -292,6 +302,8 @@ func (s *dumpState) dump(value interface{}) {
 	v := reflect.ValueOf(value)
 	s.dumpVal(v)
 }
+
+var dumperType = reflect.TypeOf((*Dumper)(nil)).Elem()
 
 func (s *dumpState) descendIntoPossiblePointer(value reflect.Value, f func()) {
 	canonicalize := true
@@ -345,7 +357,6 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	}
 
 	// Handle custom dumpers
-	dumperType := reflect.TypeOf((*Dumper)(nil)).Elem()
 	if v.Type().Implements(dumperType) {
 		s.descendIntoPossiblePointer(v, func() {
 			// Run the custom dumper buffering the output
@@ -462,6 +473,16 @@ func newDumpState(value reflect.Value, options *Options, writer io.Writer) *dump
 		config:   options,
 		pointers: mapReusedPointers(value),
 		w:        writer,
+	}
+
+	if options.FormatTime {
+		result.timeFormatter = func(t time.Time) string {
+			t = t.In(time.UTC)
+			return fmt.Sprintf(
+				`time.Date(%d, %d, %d, %d, %d, %d, %d, time.UTC)`,
+				t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(),
+			)
+		}
 	}
 
 	if options.HomePackage != "" {

@@ -16,4 +16,9 @@
   &20,
   litter.Dump,
   func(string, int) (bool, error),
+  time.Time{
+    wall: 0,
+    ext: 63650361600,
+    loc: nil,
+  },
 }

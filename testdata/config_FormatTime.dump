@@ -1,7 +1,11 @@
 []interface {}{
   litter_test.options{
+    Compact: false,
+    StripPackageNames: false,
     HidePrivateFields: true,
+    HomePackage: "",
     Separator: " ",
+    StrictGo: false,
   },
   &litter_test.BasicStruct{
     Public: 1,
@@ -12,8 +16,5 @@
   &20,
   litter.Dump,
   func(string, int) (bool, error),
-  time.Time{
-    wall: 0,
-    ext: 63650361600,
-  },
+  time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
 }

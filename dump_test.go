@@ -1,9 +1,9 @@
 package litter_test
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
@@ -15,7 +15,7 @@ import (
 	"github.com/sanity-io/litter"
 )
 
-func Function(arg1 string, arg2 int) (string, error) {
+func Function(string, int) (string, error) {
 	return "", nil
 }
 
@@ -238,7 +238,7 @@ func TestSdump_maps(t *testing.T) {
 			2: "two",
 		},
 		map[int]*BlankStruct{
-			2: &BlankStruct{},
+			2: {},
 		},
 	})
 }
@@ -263,16 +263,19 @@ var standardCfg = litter.Options{}
 func runTestWithCfg(t *testing.T, name string, cfg *litter.Options, cases ...interface{}) {
 	t.Run(name, func(t *testing.T) {
 		fileName := fmt.Sprintf("testdata/%s.dump", name)
+
 		dump := cfg.Sdump(cases...)
-		reference, err := ioutil.ReadFile(fileName)
+
+		reference, err := os.ReadFile(fileName)
 		if os.IsNotExist(err) {
 			t.Logf("Note: Test data file %s does not exist, writing it; verify contents!", fileName)
-			err := ioutil.WriteFile(fileName, []byte(dump), 0644)
+			err := os.WriteFile(fileName, []byte(dump), 0644)
 			if err != nil {
 				t.Error(err)
 			}
 			return
 		}
+
 		assertEqualStringsWithDiff(t, string(reference), dump)
 	})
 }
@@ -286,17 +289,19 @@ func diffStrings(t *testing.T, expected, actual string) (*string, bool) {
 		return nil, true
 	}
 
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	require.NoError(t, ioutil.WriteFile(fmt.Sprintf("%s/expected", dir), []byte(expected), 0644))
-	require.NoError(t, ioutil.WriteFile(fmt.Sprintf("%s/actual", dir), []byte(actual), 0644))
+	require.NoError(t, os.WriteFile(fmt.Sprintf("%s/expected", dir), []byte(expected), 0644))
+	require.NoError(t, os.WriteFile(fmt.Sprintf("%s/actual", dir), []byte(actual), 0644))
 
 	out, err := exec.Command("diff", "--side-by-side",
 		fmt.Sprintf("%s/expected", dir),
 		fmt.Sprintf("%s/actual", dir)).Output()
-	if _, ok := err.(*exec.ExitError); !ok {
+
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) {
 		require.NoError(t, err)
 	}
 

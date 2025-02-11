@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -163,6 +164,7 @@ func TestSdump_config(t *testing.T) {
 		(func(v IntAlias) *IntAlias { return &v })(20),
 		litter.Dump,
 		func(s string, i int) (bool, error) { return false, nil },
+		time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 
 	runTestWithCfg(t, "config_Compact", &litter.Options{
@@ -203,6 +205,9 @@ func TestSdump_config(t *testing.T) {
 			}
 			return false
 		},
+	}, data)
+	runTestWithCfg(t, "config_FormatTime", &litter.Options{
+		FormatTime: true,
 	}, data)
 
 	basic := &BasicStruct{1, 2}

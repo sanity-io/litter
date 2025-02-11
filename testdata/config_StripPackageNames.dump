@@ -16,4 +16,9 @@
   &20,
   Dump,
   func(string, int) (bool, error),
+  Time{
+    wall: 0,
+    ext: 63650361600,
+    loc: nil,
+  },
 }

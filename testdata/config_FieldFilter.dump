@@ -9,4 +9,5 @@
   &20,
   litter.Dump,
   func(string, int) (bool, error),
+  time.Time{},
 }

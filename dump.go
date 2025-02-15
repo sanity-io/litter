@@ -134,10 +134,12 @@ func (s *dumpState) dumpSlice(v reflect.Value) {
 }
 
 func (s *dumpState) dumpStruct(v reflect.Value) {
-	val := v.Interface()
-	if t, ok := val.(time.Time); ok && s.timeFormatter != nil {
-		s.writeString(s.timeFormatter(t))
-		return
+	if v.CanInterface() {
+		val := v.Interface()
+		if t, ok := val.(time.Time); ok && s.timeFormatter != nil {
+			s.writeString(s.timeFormatter(t))
+			return
+		}
 	}
 
 	dumpPreamble := func() {

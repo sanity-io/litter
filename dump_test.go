@@ -263,6 +263,19 @@ func TestSdump_RecursiveMaps(t *testing.T) {
 	runTests(t, "recursive_maps", mp)
 }
 
+type unexportedStruct struct {
+	x int
+}
+type StructWithUnexportedType struct {
+	unexported unexportedStruct
+}
+
+func TestSdump_unexported(t *testing.T) {
+	runTests(t, "unexported", StructWithUnexportedType{
+		unexported: unexportedStruct{},
+	})
+}
+
 var standardCfg = litter.Options{}
 
 func runTestWithCfg(t *testing.T, name string, cfg *litter.Options, cases ...interface{}) {

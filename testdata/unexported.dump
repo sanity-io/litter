@@ -1,0 +1,5 @@
+litter_test.StructWithUnexportedType{
+  unexported: litter_test.unexportedStruct{
+    x: 0,
+  },
+}

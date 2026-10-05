@@ -400,3 +400,27 @@ func messageFromMsgAndArgs(msgAndArgs ...interface{}) string {
 func runTests(t *testing.T, name string, cases ...any) {
 	runTestWithCfg(t, name, &standardCfg, cases...)
 }
+
+func TestSdump_strictGoPointers(t *testing.T) {
+	strictCfg := &litter.Options{
+		StrictGo: true,
+	}
+
+	intVal := 42
+	strVal := "hello"
+	boolVal := true
+	floatVal := 12.3
+	int8Val := int8(10)
+	uintVal := uint(10)
+	aliasVal := IntAlias(20)
+	nestedVal := &intVal
+
+	assert.Equal(t, "new(42)", strictCfg.Sdump(&intVal))
+	assert.Equal(t, "new(\"hello\")", strictCfg.Sdump(&strVal))
+	assert.Equal(t, "new(true)", strictCfg.Sdump(&boolVal))
+	assert.Equal(t, "new(12.3)", strictCfg.Sdump(&floatVal))
+	assert.Equal(t, "new(int8(10))", strictCfg.Sdump(&int8Val))
+	assert.Equal(t, "new(uint(10))", strictCfg.Sdump(&uintVal))
+	assert.Equal(t, "new(tests_test.IntAlias(20))", strictCfg.Sdump(&aliasVal))
+	assert.Equal(t, "new(new(42))", strictCfg.Sdump(&nestedVal))
+}

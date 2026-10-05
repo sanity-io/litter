@@ -104,8 +104,8 @@ func (s *dumpState) newlineWithPointerNameComment() {
 	}
 }
 
-func (s *dumpState) dumpType(v reflect.Value) {
-	typeName := v.Type().String()
+func (s *dumpState) typeName(t reflect.Type) string {
+	typeName := t.String()
 	if s.config.StripPackageNames {
 		typeName = packageNameStripperRegexp.ReplaceAllLiteralString(typeName, "")
 	} else if s.homePackageRegexp != nil {
@@ -114,7 +114,11 @@ func (s *dumpState) dumpType(v reflect.Value) {
 	if s.config.Compact {
 		typeName = compactTypeRegexp.ReplaceAllString(typeName, "$1")
 	}
-	s.write([]byte(typeName))
+	return typeName
+}
+
+func (s *dumpState) dumpType(v reflect.Value) {
+	s.write([]byte(s.typeName(v.Type())))
 }
 
 func (s *dumpState) dumpSlice(v reflect.Value) {
@@ -452,13 +456,17 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	case reflect.Ptr:
 		s.descendIntoPossiblePointer(v, func() {
+			elem := v.Elem()
 			if s.config.StrictGo {
-				s.writeString(fmt.Sprintf("(func(v %s) *%s { return &v })(", v.Elem().Type(), v.Elem().Type()))
-				s.dumpVal(v.Elem())
-				s.writeString(")")
+				if isAddressableLiteral(elem.Kind()) {
+					s.writeString("&")
+					s.dumpVal(elem)
+				} else {
+					s.dumpNew(elem)
+				}
 			} else {
 				s.writeString("&")
-				s.dumpVal(v.Elem())
+				s.dumpVal(elem)
 			}
 		})
 
@@ -482,6 +490,58 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 		} else {
 			s.writeString(fmt.Sprintf("%v", v.String()))
 		}
+	}
+}
+
+func (s *dumpState) dumpNew(v reflect.Value) {
+	t := v.Type()
+	s.writeString("new(")
+	if isDefaultPrimitiveType(t) {
+		s.dumpVal(v)
+	} else if isPrimitiveKind(t.Kind()) {
+		s.writeString(s.typeName(t))
+		s.writeString("(")
+		s.dumpVal(v)
+		s.writeString(")")
+	} else {
+		s.dumpVal(v)
+	}
+	s.writeString(")")
+}
+
+func isAddressableLiteral(kind reflect.Kind) bool {
+	switch kind {
+	case reflect.Struct, reflect.Array, reflect.Slice, reflect.Map:
+		return true
+	default:
+		return false
+	}
+}
+
+func isDefaultPrimitiveType(t reflect.Type) bool {
+	if t.PkgPath() != "" {
+		return false
+	}
+	switch t.Kind() {
+	case reflect.Int, reflect.String, reflect.Bool, reflect.Float64,
+		reflect.Complex64, reflect.Complex128:
+		return t.Name() == t.Kind().String()
+	default:
+		return false
+	}
+}
+
+func isPrimitiveKind(k reflect.Kind) bool {
+	switch k {
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+		reflect.Float32, reflect.Float64,
+		reflect.Complex64, reflect.Complex128,
+		reflect.String:
+		return true
+	default:
+		return false
 	}
 }
 

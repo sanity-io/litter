@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"os/exec"
 	"reflect"
@@ -399,4 +400,123 @@ func messageFromMsgAndArgs(msgAndArgs ...interface{}) string {
 
 func runTests(t *testing.T, name string, cases ...any) {
 	runTestWithCfg(t, name, &standardCfg, cases...)
+}
+
+func TestIssue50(t *testing.T) {
+	t.Run("map with NaN key producing zero Value", func(t *testing.T) {
+		nanMap := map[float64]string{math.NaN(): "value"}
+		var out string
+		assert.NotPanics(t, func() {
+			out = litter.Sdump(nanMap)
+		})
+		assert.Contains(t, out, "<invalid>")
+
+		// Test with float32 NaN key as well
+		nanMap32 := map[float32]int{float32(math.NaN()): 42}
+		assert.NotPanics(t, func() {
+			out = litter.Sdump(nanMap32)
+		})
+		assert.Contains(t, out, "<invalid>")
+	})
+
+	t.Run("nil interface map keys and values", func(t *testing.T) {
+		nilKeyMap := map[any]string{nil: "value"}
+		var out string
+		assert.NotPanics(t, func() {
+			out = litter.Sdump(nilKeyMap)
+		})
+		assert.Contains(t, out, "nil")
+		assert.Contains(t, out, `"value"`)
+
+		nilValMap := map[string]any{"key": nil}
+		assert.NotPanics(t, func() {
+			out = litter.Sdump(nilValMap)
+		})
+		assert.Contains(t, out, `"key"`)
+		assert.Contains(t, out, "nil")
+
+		nilBothMap := map[any]any{nil: nil}
+		assert.NotPanics(t, func() {
+			out = litter.Sdump(nilBothMap)
+		})
+		assert.Contains(t, out, "nil: nil")
+	})
+
+	t.Run("zero reflect.Value and uninitialized values", func(t *testing.T) {
+		var zeroVal reflect.Value
+		assert.NotPanics(t, func() {
+			out := litter.Sdump(zeroVal)
+			assert.Contains(t, out, "reflect.Value{}")
+		})
+
+		type structWithReflectVal struct {
+			Val reflect.Value
+		}
+		assert.NotPanics(t, func() {
+			out := litter.Sdump(structWithReflectVal{Val: reflect.Value{}})
+			assert.Contains(t, out, "structWithReflectVal")
+		})
+
+		sliceOfReflectVal := []reflect.Value{reflect.Value{}}
+		assert.NotPanics(t, func() {
+			out := litter.Sdump(sliceOfReflectVal)
+			assert.Contains(t, out, "[]reflect.Value")
+		})
+
+		mapOfReflectVal := map[string]reflect.Value{"zero": {}}
+		assert.NotPanics(t, func() {
+			out := litter.Sdump(mapOfReflectVal)
+			assert.Contains(t, out, "map[string]reflect.Value")
+		})
+
+		var uninitInterface any
+		assert.NotPanics(t, func() {
+			out := litter.Sdump(uninitInterface)
+			assert.Equal(t, "nil", out)
+		})
+
+		nilSlice := []any{nil, (*int)(nil)}
+		assert.NotPanics(t, func() {
+			out := litter.Sdump(nilSlice)
+			assert.Contains(t, out, "nil")
+		})
+	})
+
+	t.Run("custom dumpers with invalid reflection values", func(t *testing.T) {
+		nanMap := map[float64]string{math.NaN(): "value"}
+
+		cfgDumpFunc := &litter.Options{
+			DumpFunc: func(v reflect.Value, w io.Writer) bool {
+				if v.IsValid() && v.Kind() == reflect.String {
+					_, _ = w.Write([]byte(`"custom_str"`))
+					return true
+				}
+				return false
+			},
+		}
+		assert.NotPanics(t, func() {
+			out := cfgDumpFunc.Sdump(nanMap)
+			assert.Contains(t, out, "<invalid>")
+		})
+
+		cfgRawDumpFunc := &litter.Options{
+			DumpRawFunc: func(v reflect.Value, w io.Writer) bool {
+				if v.IsValid() && v.Kind() == reflect.String {
+					_, _ = w.Write([]byte(`"custom_raw"`))
+					return true
+				}
+				return false
+			},
+		}
+		assert.NotPanics(t, func() {
+			out := cfgRawDumpFunc.Sdump(nanMap)
+			assert.Contains(t, out, "<invalid>")
+		})
+
+		compactCfg := &litter.Options{Compact: true}
+		assert.NotPanics(t, func() {
+			out := compactCfg.Sdump(nanMap)
+			assert.Contains(t, out, "<invalid>")
+		})
+	})
 }

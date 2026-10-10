@@ -359,7 +359,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	kind := v.Kind()
 
 	// Try to handle with dump func
-	if s.config.DumpFunc != nil {
+	if s.config.DumpFunc != nil && v.IsValid() {
 		buf := new(bytes.Buffer)
 		if s.config.DumpFunc(v, buf) {
 			s.dumpCustom(v, buf, true)
@@ -368,7 +368,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	}
 
 	// Handle custom dumpers
-	if v.Type().Implements(dumperType) {
+	if v.IsValid() && v.Type().Implements(dumperType) {
 		s.descendIntoPossiblePointer(v, func() {
 			// Run the custom dumper buffering the output
 			buf := new(bytes.Buffer)
@@ -380,7 +380,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 	}
 
 	// Try to handle with dump raw func
-	if s.config.DumpRawFunc != nil {
+	if s.config.DumpRawFunc != nil && v.IsValid() {
 		buf := new(bytes.Buffer)
 		if s.config.DumpRawFunc(v, buf) {
 			s.dumpCustom(v, buf, false)
@@ -390,7 +390,7 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	// Handle custom raw dumpers
 	rawDumperType := reflect.TypeOf((*DumperRaw)(nil)).Elem()
-	if v.Type().Implements(rawDumperType) {
+	if v.IsValid() && v.Type().Implements(rawDumperType) {
 		s.descendIntoPossiblePointer(v, func() {
 			// Run the custom raw dumper buffering the output
 			buf := new(bytes.Buffer)
@@ -403,8 +403,6 @@ func (s *dumpState) dumpVal(value reflect.Value) {
 
 	switch kind {
 	case reflect.Invalid:
-		// Do nothing.  We should never get here since invalid has already
-		// been handled above.
 		s.write([]byte("<invalid>"))
 
 	case reflect.Bool:
